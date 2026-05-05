@@ -125,7 +125,7 @@ def load_vaastav_player_gw(name, team, season):
     except Exception:
         return pd.DataFrame()
 
-CURRENT_SEASON = '2024-25'
+CURRENT_SEASON = '2025-26'
 
 @st.cache_data(ttl=300)
 def load_player_career(web_name):
