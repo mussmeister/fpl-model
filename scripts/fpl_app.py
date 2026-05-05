@@ -11,13 +11,9 @@ from pathlib import Path
 from datetime import datetime
 import streamlit as st
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from utils.team_mappings import to_short, SOLIO_TO_SHORT
-
 ROOT         = Path(__file__).resolve().parent.parent
 DB_PATH      = ROOT / 'outputs' / 'projections_history.db'
 FIXTURE_PATH = ROOT / 'fixtures' / 'fixtures_all.csv'
-SOLIO_DIR    = ROOT / 'solio'
 
 BLUE_SOLID   = "#4472C4"
 ORANGE_SOLID = "#C4632A"
@@ -74,19 +70,16 @@ def load_fixtures_df():
 
 @st.cache_data(ttl=3600)
 def load_abbreviations():
-    abbr = {}
-    files = sorted(SOLIO_DIR.glob('fixture_difficulty_all_metrics*.csv'))
-    if not files:
-        return abbr
     try:
-        df = pd.read_csv(files[-1], encoding='utf-8-sig')
-        if 'Team' in df.columns and 'Abbr' in df.columns:
-            for _, row in df.iterrows():
-                short = to_short(str(row['Team']), SOLIO_TO_SHORT)
-                abbr[short] = str(row['Abbr']).strip()
+        with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
+            cur = conn.execute(
+                "SELECT team, abbr FROM solio_fixture_snapshots "
+                "WHERE ingested_at = (SELECT MAX(ingested_at) FROM solio_fixture_snapshots) "
+                "AND abbr IS NOT NULL AND abbr != ''"
+            )
+            return {row[0]: row[1] for row in cur.fetchall()}
     except Exception:
-        pass
-    return abbr
+        return {}
 
 def get_abbr(team, abbr_map):
     return abbr_map.get(team, team[:3].upper())

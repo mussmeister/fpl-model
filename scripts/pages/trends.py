@@ -9,15 +9,10 @@ import sqlite3
 import pandas as pd
 import plotly.graph_objects as go
 from pathlib import Path
-from datetime import datetime
 import streamlit as st
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from utils.team_mappings import to_short, SOLIO_TO_SHORT
 
 DB_PATH      = Path(__file__).resolve().parents[2] / 'outputs' / 'projections_history.db'
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / 'fixtures' / 'fixtures_all.csv'
-SOLIO_DIR    = Path(__file__).resolve().parents[2] / 'solio'
 
 st.markdown("""
 <style>
@@ -70,26 +65,20 @@ def get_history(gw, team):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     return df
 
+@st.cache_data(ttl=600)
 def get_solio_history(gw, team, metric_col):
-    col_name = f'{gw}_G' if metric_col == 'g' else f'{gw}_CS'
-    rows = []
-    for path in sorted(SOLIO_DIR.glob('fixture_difficulty_all_metrics*.csv')):
-        try:
-            df = pd.read_csv(path, encoding='utf-8-sig')
-            df['Team'] = df['Team'].apply(lambda x: to_short(x, SOLIO_TO_SHORT))
-            team_row = df[df['Team'] == team]
-            if len(team_row) == 0 or col_name not in df.columns:
-                continue
-            val = pd.to_numeric(team_row.iloc[0][col_name], errors='coerce')
-            if pd.isna(val):
-                continue
-            mtime = datetime.fromtimestamp(path.stat().st_mtime)
-            rows.append({'timestamp': mtime, 'value': float(val)})
-        except Exception:
-            continue
-    if not rows:
+    col = 'g' if metric_col == 'g' else 'cs'
+    try:
+        with sqlite3.connect(str(DB_PATH), check_same_thread=False) as c:
+            df = pd.read_sql(
+                f"SELECT ingested_at AS timestamp, {col} AS value "
+                "FROM solio_fixture_snapshots WHERE gw = ? AND team = ? ORDER BY ingested_at",
+                c, params=(gw, team)
+            )
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        return df.dropna(subset=['value']).reset_index(drop=True)
+    except Exception:
         return pd.DataFrame(columns=['timestamp', 'value'])
-    return pd.DataFrame(rows).sort_values('timestamp').reset_index(drop=True)
 
 # ── UI ────────────────────────────────────────────────────────────────────────
 
