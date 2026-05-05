@@ -347,8 +347,11 @@ def player_stat_cards(gw_df, season_label):
     cs    = int(gw_df['clean_sheets'].sum())
     pts   = int(gw_df['total_points'].sum())
     bon   = int(gw_df['bonus'].sum())
-    xg    = gw_df['expected_goals'].sum()  if 'expected_goals'  in gw_df.columns else None
-    xa    = gw_df['expected_assists'].sum() if 'expected_assists' in gw_df.columns else None
+    xg    = pd.to_numeric(gw_df['expected_goals'],  errors='coerce').sum() if 'expected_goals'  in gw_df.columns else None
+    xa    = pd.to_numeric(gw_df['expected_assists'], errors='coerce').sum() if 'expected_assists' in gw_df.columns else None
+    # treat as unavailable if the whole column was None (pre-xG seasons)
+    if xg == 0 and 'expected_goals' in gw_df.columns and gw_df['expected_goals'].isna().all():
+        xg = None
 
     c1, c2, c3, c4, c5, c6 = st.columns(6)
     c1.markdown(stat_card("Total Pts",    pts,                 f"{season_label}"), unsafe_allow_html=True)
@@ -381,7 +384,7 @@ def gw_tables(gw_df):
     show = gw_df[present].rename(columns=rename)
     for col in ['xG', 'xA']:
         if col in show.columns:
-            show[col] = show[col].round(2)
+            show[col] = pd.to_numeric(show[col], errors='coerce').round(2)
 
     col_l5, col_full = st.columns(2)
     with col_l5:
