@@ -196,7 +196,13 @@ if not avail_gws:
     st.warning("No upcoming fixtures found.")
     st.stop()
 
-st.title("⚽ FPL Fixtures")
+col_title, col_live = st.columns([4, 1])
+with col_title:
+    st.title("⚽ FPL Fixtures")
+with col_live:
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("🔴 Live GW", use_container_width=True, type="primary"):
+        st.switch_page("pages/live_gw.py")
 
 selected_gw = st.selectbox(
     "Gameweek", avail_gws, index=0, format_func=lambda g: f"Gameweek {g}"
