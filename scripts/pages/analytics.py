@@ -128,10 +128,12 @@ def load_vaastav_player_gw(name, team, season):
 @st.cache_data(ttl=300)
 def load_player_career(web_name):
     """Season-by-season totals, combining vaastav history + current season."""
+    CURRENT_SEASON = '2024-25'
     rows = []
     try:
         with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
-            # Historical seasons from vaastav (fuzzy name match)
+            # Historical seasons from vaastav — exclude current season (covered by fpl API).
+            # Use LIKE for flexible name matching (vaastav name format can differ by season).
             df_hist = pd.read_sql("""
                 SELECT season, name, team, position,
                        COUNT(DISTINCT gw)  AS gws,
@@ -144,15 +146,20 @@ def load_player_career(web_name):
                        SUM(COALESCE(expected_goals, 0))  AS xg,
                        SUM(COALESCE(expected_assists, 0)) AS xa
                 FROM vaastav_gw_stats
-                WHERE LOWER(name) = LOWER(?)
+                WHERE season != :season
+                  AND (
+                      LOWER(name) = LOWER(:name)
+                      OR LOWER(name) LIKE '%' || LOWER(:name) || '%'
+                      OR LOWER(:name) LIKE '%' || LOWER(name) || '%'
+                  )
                 GROUP BY season, name, team, position
                 ORDER BY season DESC
-            """, conn, params=(web_name,))
+            """, conn, params={'season': CURRENT_SEASON, 'name': web_name})
             rows.append(df_hist)
 
-            # Current season from fpl_player_gw_stats
+            # Current season always from fpl API (most up to date)
             df_cur = pd.read_sql("""
-                SELECT '2024-25' AS season,
+                SELECT :season AS season,
                        p.web_name AS name, t.name AS team,
                        CASE p.element_type
                            WHEN 1 THEN 'GK' WHEN 2 THEN 'DEF'
@@ -170,9 +177,9 @@ def load_player_career(web_name):
                 FROM fpl_player_gw_stats s
                 JOIN fpl_players p ON s.element_id = p.element_id
                 LEFT JOIN fpl_teams t ON p.team_id = t.team_id
-                WHERE LOWER(p.web_name) = LOWER(?)
+                WHERE LOWER(p.web_name) = LOWER(:name)
                 GROUP BY season, name, team, position
-            """, conn, params=(web_name,))
+            """, conn, params={'season': CURRENT_SEASON, 'name': web_name})
             rows.append(df_cur)
 
     except Exception:
