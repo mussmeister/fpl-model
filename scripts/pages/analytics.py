@@ -127,17 +127,77 @@ def load_vaastav_player_gw(name, team, season):
 
 CURRENT_SEASON = '2025-26'
 
+@st.cache_data(ttl=600)
+def load_career_player_list():
+    """All distinct players from vaastav (all seasons) + current fpl_players.
+    Names are cleaned (underscores → spaces). Deduplicated by name."""
+    try:
+        with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
+            df_v = pd.read_sql("""
+                SELECT
+                    REPLACE(name, '_', ' ') AS clean_name,
+                    MAX(position)            AS position,
+                    SUM(total_points)        AS career_pts
+                FROM vaastav_gw_stats
+                WHERE name != ''
+                GROUP BY REPLACE(name, '_', ' ')
+            """, conn)
+            df_c = pd.read_sql("""
+                SELECT web_name AS clean_name,
+                       CASE element_type
+                           WHEN 1 THEN 'GK' WHEN 2 THEN 'DEF'
+                           WHEN 3 THEN 'MID' WHEN 4 THEN 'FWD'
+                       END AS position,
+                       total_points AS career_pts
+                FROM fpl_players
+            """, conn)
+            combined = pd.concat([df_v, df_c], ignore_index=True)
+            # Keep highest-pts entry per name (resolves duplicates across sources)
+            combined = (combined.sort_values('career_pts', ascending=False)
+                                .drop_duplicates(subset='clean_name', keep='first')
+                                .sort_values('clean_name')
+                                .reset_index(drop=True))
+            return combined
+    except Exception:
+        return pd.DataFrame()
+
+@st.cache_data(ttl=600)
+def load_career_teams():
+    """All distinct team names across vaastav seasons for career team filter."""
+    try:
+        with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
+            cur = conn.execute(
+                "SELECT DISTINCT team FROM vaastav_gw_stats WHERE team != '' ORDER BY team"
+            )
+            return [row[0] for row in cur.fetchall()]
+    except Exception:
+        return []
+
 @st.cache_data(ttl=300)
-def load_player_career(web_name):
-    """Season-by-season totals, combining vaastav history + current season."""
+def load_career_players_for_team(team):
+    """Clean names of players who played for a given team in any vaastav season."""
+    try:
+        with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
+            cur = conn.execute(
+                "SELECT DISTINCT REPLACE(name, '_', ' ') FROM vaastav_gw_stats WHERE team = ?",
+                (team,)
+            )
+            return {row[0] for row in cur.fetchall()}
+    except Exception:
+        return set()
+
+@st.cache_data(ttl=300)
+def load_player_career(clean_name):
+    """Season-by-season totals, combining vaastav history + current season.
+    clean_name uses spaces (not underscores); both forms matched in SQL."""
+    name_us   = clean_name.replace(' ', '_')   # "Harry Kane" → "Harry_Kane"
     rows = []
     try:
         with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
-            # Historical seasons from vaastav — explicitly exclude current season.
-            # Use positional ? params (named :param syntax unreliable with sqlite3+pandas).
-            name_like = f'%{web_name}%'
             df_hist = pd.read_sql("""
-                SELECT season, name, team, position,
+                SELECT season,
+                       REPLACE(name, '_', ' ') AS name,
+                       team, position,
                        COUNT(DISTINCT gw)  AS gws,
                        SUM(minutes)        AS minutes,
                        SUM(total_points)   AS total_points,
@@ -152,15 +212,15 @@ def load_player_career(web_name):
                 WHERE season != ?
                   AND (
                       LOWER(name) = LOWER(?)
-                      OR LOWER(name) LIKE LOWER(?)
-                      OR LOWER(?) LIKE '%' || LOWER(name) || '%'
+                      OR LOWER(name) = LOWER(?)
+                      OR LOWER(REPLACE(name, '_', ' ')) = LOWER(?)
                   )
                 GROUP BY season, name, team, position
                 ORDER BY season DESC
-            """, conn, params=(CURRENT_SEASON, web_name, name_like, web_name))
+            """, conn, params=(CURRENT_SEASON, clean_name, name_us, clean_name))
             rows.append(df_hist)
 
-            # Current season always from fpl API — most up to date
+            # Current season from fpl API
             df_cur = pd.read_sql("""
                 SELECT p.web_name AS name, t.name AS team,
                        CASE p.element_type
@@ -182,7 +242,7 @@ def load_player_career(web_name):
                 LEFT JOIN fpl_teams t ON p.team_id = t.team_id
                 WHERE LOWER(p.web_name) = LOWER(?)
                 GROUP BY name, team, position
-            """, conn, params=(web_name,))
+            """, conn, params=(clean_name,))
             if not df_cur.empty:
                 df_cur.insert(0, 'season', CURRENT_SEASON)
             rows.append(df_cur)
@@ -431,25 +491,50 @@ with tab_player:
             st.info("No historical data yet. Run `python scripts/ingest_vaastav.py` on the server.")
             st.stop()
 
-        current_df = load_current_players()
-        if not current_df.empty:
-            current_df['label'] = (current_df['web_name'] + '  ·  '
-                                   + current_df['team_short'].fillna('') + '  ·  '
-                                   + current_df['element_type'].map(POS_MAP))
-        else:
-            current_df['label'] = current_df['web_name']
+        all_players = load_career_player_list()
+        career_teams_list = load_career_teams()
 
-        selected_label = st.selectbox("Search player", current_df['label'].tolist(),
-                                      key="career_player_select",
-                                      help="Career view matches by web name — accuracy improves when name hasn't changed across seasons")
-        p = current_df[current_df['label'] == selected_label].iloc[0]
+        if all_players.empty:
+            st.info("No player data available.")
+            st.stop()
 
-        career = load_player_career(p['web_name'])
+        # ── Filters ────────────────────────────────────────────────────────
+        fc1, fc2 = st.columns(2)
+        with fc1:
+            pos_filter = st.selectbox(
+                "Position", ['All'] + ['GK', 'DEF', 'MID', 'FWD'],
+                key='career_pos_filter'
+            )
+        with fc2:
+            team_filter = st.selectbox(
+                "Team (any season)", ['All'] + career_teams_list,
+                key='career_team_filter'
+            )
+
+        filtered_players = all_players.copy()
+        if pos_filter != 'All':
+            filtered_players = filtered_players[filtered_players['position'] == pos_filter]
+        if team_filter != 'All':
+            team_names = load_career_players_for_team(team_filter)
+            filtered_players = filtered_players[filtered_players['clean_name'].isin(team_names)]
+
+        if filtered_players.empty:
+            st.info("No players found for the selected filters.")
+            st.stop()
+
+        selected_name = st.selectbox(
+            "Search player (type to filter)",
+            filtered_players['clean_name'].tolist(),
+            key="career_player_select",
+            help="Type any part of the name to search. Includes all historical PL players."
+        )
+
+        career = load_player_career(selected_name)
 
         if career.empty:
-            st.info(f"No multi-season data found for {p['web_name']}.")
+            st.info(f"No multi-season data found for {selected_name}.")
         else:
-            st.markdown(f"### {p['web_name']} — Career Summary")
+            st.markdown(f"### {selected_name} — Career Summary")
 
             # Career totals
             t_pts  = int(career['total_points'].sum())
@@ -488,7 +573,7 @@ with tab_player:
                 line=dict(color='#C4632A', width=2, dash='dot'), yaxis='y2'
             ))
             fig_career.update_layout(
-                title=f"{p['web_name']} — Season-by-Season",
+                title=f"{selected_name} — Season-by-Season",
                 xaxis_title="Season",
                 yaxis=dict(title="Total Points"),
                 yaxis2=dict(title="Goals / Assists", overlaying='y', side='right', showgrid=False),
