@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+
+# Secrets & local config
+config/config.json
+
+# Data files — not committed; synced separately to EC2 via S3
+solio/
+fplreview/
+
+# Generated outputs — rebuilt on the server
+outputs/
+fpl_xmins.db
+scripts/fpl_xmins.db
+
+# Fixtures (committed — static reference data)
+# fixtures/ ← keep this in repo
+
+# Claude AI session files
+.claude/
+
+# Misc
+FPL/
+ZIPS/
+*.zip
+*.gsheet
+test.py
+analyze_deltas.py

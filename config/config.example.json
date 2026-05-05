@@ -1,0 +1,16 @@
+{
+    "odds_api_key": "YOUR_ODDS_API_KEY_HERE",
+    "season": "2526",
+    "shrinkage_weight": 0.9357,
+    "dc_rho": -0.073,
+    "blend_weight": 0.9322,
+    "xi": 0.002,
+    "mc_last_run": "",
+    "mc_samples": 500,
+    "mc_score": 0.0,
+    "mc_improvement_pct": 0.0,
+    "ah_weight": 0.65,
+    "fplreview_dir": "fplreview",
+    "solio_dir": "solio",
+    "player_outputs_dir": "outputs"
+}

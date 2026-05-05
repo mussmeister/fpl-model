@@ -1,0 +1,381 @@
+Fixture_ID,GW,Original_GW,Overridden,Kickoff,Kickoff_Date,Home,Away,Status,Result,Home_Difficulty,Away_Difficulty,Override_Note,Type
+1,1,1,False,Fri 15 Aug 2025 19:00,2025-08-15,Liverpool,Bournemouth,Finished,4-2,3,4,,SGW
+2,1,1,False,Sat 16 Aug 2025 11:30,2025-08-16,Aston Villa,Newcastle,Finished,0-0,3,4,,SGW
+3,1,1,False,Sat 16 Aug 2025 14:00,2025-08-16,Brighton,Fulham,Finished,1-1,3,4,,SGW
+6,1,1,False,Sat 16 Aug 2025 14:00,2025-08-16,Spurs,Burnley,Finished,3-0,1,3,,SGW
+5,1,1,False,Sat 16 Aug 2025 14:00,2025-08-16,Sunderland,West Ham,Finished,3-0,2,3,,SGW
+7,1,1,False,Sat 16 Aug 2025 16:30,2025-08-16,Wolves,Man City,Finished,0-4,4,2,,SGW
+8,1,1,False,Sun 17 Aug 2025 13:00,2025-08-17,Chelsea,Crystal Palace,Finished,0-0,3,3,,SGW
+4,1,1,False,Sun 17 Aug 2025 13:00,2025-08-17,Nott'm Forest,Brentford,Finished,3-1,3,3,,SGW
+9,1,1,False,Sun 17 Aug 2025 15:30,2025-08-17,Man Utd,Arsenal,Finished,0-1,4,4,,SGW
+10,1,1,False,Mon 18 Aug 2025 19:00,2025-08-18,Leeds,Everton,Finished,1-0,3,3,,SGW
+20,2,2,False,Fri 22 Aug 2025 19:00,2025-08-22,West Ham,Chelsea,Finished,1-5,3,3,,SGW
+18,2,2,False,Sat 23 Aug 2025 11:30,2025-08-23,Man City,Spurs,Finished,0-2,3,5,,SGW
+12,2,2,False,Sat 23 Aug 2025 14:00,2025-08-23,Bournemouth,Wolves,Finished,1-0,1,4,,SGW
+13,2,2,False,Sat 23 Aug 2025 14:00,2025-08-23,Brentford,Aston Villa,Finished,1-0,3,3,,SGW
+14,2,2,False,Sat 23 Aug 2025 14:00,2025-08-23,Burnley,Sunderland,Finished,2-0,2,2,,SGW
+11,2,2,False,Sat 23 Aug 2025 16:30,2025-08-23,Arsenal,Leeds,Finished,5-0,2,5,,SGW
+15,2,2,False,Sun 24 Aug 2025 13:00,2025-08-24,Crystal Palace,Nott'm Forest,Finished,1-1,3,3,,SGW
+16,2,2,False,Sun 24 Aug 2025 13:00,2025-08-24,Everton,Brighton,Finished,2-0,3,3,,SGW
+17,2,2,False,Sun 24 Aug 2025 15:30,2025-08-24,Fulham,Man Utd,Finished,1-1,3,3,,SGW
+19,2,2,False,Mon 25 Aug 2025 19:00,2025-08-25,Newcastle,Liverpool,Finished,2-3,3,3,,SGW
+23,3,3,False,Sat 30 Aug 2025 11:30,2025-08-30,Chelsea,Fulham,Finished,2-0,3,3,,SGW
+26,3,3,False,Sat 30 Aug 2025 14:00,2025-08-30,Man Utd,Burnley,Finished,3-2,1,4,,SGW
+29,3,3,False,Sat 30 Aug 2025 14:00,2025-08-30,Spurs,Bournemouth,Finished,0-1,3,3,,SGW
+28,3,3,False,Sat 30 Aug 2025 14:00,2025-08-30,Sunderland,Brentford,Finished,2-1,3,3,,SGW
+30,3,3,False,Sat 30 Aug 2025 14:00,2025-08-30,Wolves,Everton,Finished,2-3,3,2,,SGW
+24,3,3,False,Sat 30 Aug 2025 16:30,2025-08-30,Leeds,Newcastle,Finished,0-0,3,3,,SGW
+22,3,3,False,Sun 31 Aug 2025 13:00,2025-08-31,Brighton,Man City,Finished,2-1,4,4,,SGW
+27,3,3,False,Sun 31 Aug 2025 13:00,2025-08-31,Nott'm Forest,West Ham,Finished,0-3,2,3,,SGW
+25,3,3,False,Sun 31 Aug 2025 15:30,2025-08-31,Liverpool,Arsenal,Finished,1-0,4,4,,SGW
+21,3,3,False,Sun 31 Aug 2025 18:00,2025-08-31,Aston Villa,Crystal Palace,Finished,0-3,3,4,,SGW
+31,4,4,False,Sat 13 Sep 2025 11:30,2025-09-13,Arsenal,Nott'm Forest,Finished,3-0,3,5,,SGW
+32,4,4,False,Sat 13 Sep 2025 14:00,2025-09-13,Bournemouth,Brighton,Finished,2-1,3,4,,SGW
+35,4,4,False,Sat 13 Sep 2025 14:00,2025-09-13,Crystal Palace,Sunderland,Finished,0-0,2,3,,SGW
+36,4,4,False,Sat 13 Sep 2025 14:00,2025-09-13,Everton,Aston Villa,Finished,0-0,3,3,,SGW
+37,4,4,False,Sat 13 Sep 2025 14:00,2025-09-13,Fulham,Leeds,Finished,1-0,2,3,,SGW
+39,4,4,False,Sat 13 Sep 2025 14:00,2025-09-13,Newcastle,Wolves,Finished,1-0,1,3,,SGW
+40,4,4,False,Sat 13 Sep 2025 16:30,2025-09-13,West Ham,Spurs,Finished,0-3,3,3,,SGW
+33,4,4,False,Sat 13 Sep 2025 19:00,2025-09-13,Brentford,Chelsea,Finished,2-2,3,3,,SGW
+34,4,4,False,Sun 14 Sep 2025 13:00,2025-09-14,Burnley,Liverpool,Finished,0-1,3,2,,SGW
+38,4,4,False,Sun 14 Sep 2025 15:30,2025-09-14,Man City,Man Utd,Finished,3-0,3,5,,SGW
+46,5,5,False,Sat 20 Sep 2025 11:30,2025-09-20,Liverpool,Everton,Finished,2-1,3,4,,SGW
+43,5,5,False,Sat 20 Sep 2025 14:00,2025-09-20,Brighton,Spurs,Finished,2-2,3,4,,SGW
+44,5,5,False,Sat 20 Sep 2025 14:00,2025-09-20,Burnley,Nott'm Forest,Finished,1-1,3,2,,SGW
+49,5,5,False,Sat 20 Sep 2025 14:00,2025-09-20,West Ham,Crystal Palace,Finished,1-2,3,3,,SGW
+50,5,5,False,Sat 20 Sep 2025 14:00,2025-09-20,Wolves,Leeds,Finished,1-3,2,2,,SGW
+47,5,5,False,Sat 20 Sep 2025 16:30,2025-09-20,Man Utd,Chelsea,Finished,2-1,3,4,,SGW
+45,5,5,False,Sat 20 Sep 2025 19:00,2025-09-20,Fulham,Brentford,Finished,3-1,3,3,,SGW
+42,5,5,False,Sun 21 Sep 2025 13:00,2025-09-21,Bournemouth,Newcastle,Finished,0-0,3,4,,SGW
+48,5,5,False,Sun 21 Sep 2025 13:00,2025-09-21,Sunderland,Aston Villa,Finished,1-1,3,3,,SGW
+41,5,5,False,Sun 21 Sep 2025 15:30,2025-09-21,Arsenal,Man City,Finished,1-1,4,5,,SGW
+52,6,6,False,Sat 27 Sep 2025 11:30,2025-09-27,Brentford,Man Utd,Finished,3-1,3,3,,SGW
+53,6,6,False,Sat 27 Sep 2025 14:00,2025-09-27,Chelsea,Brighton,Finished,1-3,3,3,,SGW
+54,6,6,False,Sat 27 Sep 2025 14:00,2025-09-27,Crystal Palace,Liverpool,Finished,2-1,3,3,,SGW
+56,6,6,False,Sat 27 Sep 2025 14:00,2025-09-27,Leeds,Bournemouth,Finished,2-2,3,3,,SGW
+57,6,6,False,Sat 27 Sep 2025 14:00,2025-09-27,Man City,Burnley,Finished,5-1,1,5,,SGW
+59,6,6,False,Sat 27 Sep 2025 16:30,2025-09-27,Nott'm Forest,Sunderland,Finished,0-1,2,3,,SGW
+60,6,6,False,Sat 27 Sep 2025 19:00,2025-09-27,Spurs,Wolves,Finished,1-1,1,3,,SGW
+51,6,6,False,Sun 28 Sep 2025 13:00,2025-09-28,Aston Villa,Fulham,Finished,3-1,3,4,,SGW
+58,6,6,False,Sun 28 Sep 2025 15:30,2025-09-28,Newcastle,Arsenal,Finished,1-2,4,3,,SGW
+55,6,6,False,Mon 29 Sep 2025 19:00,2025-09-29,Everton,West Ham,Finished,1-1,2,3,,SGW
+63,7,7,False,Fri 03 Oct 2025 19:00,2025-10-03,Bournemouth,Fulham,Finished,3-1,3,4,,SGW
+67,7,7,False,Sat 04 Oct 2025 11:30,2025-10-04,Leeds,Spurs,Finished,1-2,3,3,,SGW
+61,7,7,False,Sat 04 Oct 2025 14:00,2025-10-04,Arsenal,West Ham,Finished,2-0,2,5,,SGW
+68,7,7,False,Sat 04 Oct 2025 14:00,2025-10-04,Man Utd,Sunderland,Finished,2-0,2,4,,SGW
+65,7,7,False,Sat 04 Oct 2025 16:30,2025-10-04,Chelsea,Liverpool,Finished,2-1,3,3,,SGW
+62,7,7,False,Sun 05 Oct 2025 13:00,2025-10-05,Aston Villa,Burnley,Finished,2-1,1,4,,SGW
+66,7,7,False,Sun 05 Oct 2025 13:00,2025-10-05,Everton,Crystal Palace,Finished,2-1,3,3,,SGW
+69,7,7,False,Sun 05 Oct 2025 13:00,2025-10-05,Newcastle,Nott'm Forest,Finished,2-0,3,3,,SGW
+70,7,7,False,Sun 05 Oct 2025 13:00,2025-10-05,Wolves,Brighton,Finished,1-1,3,2,,SGW
+64,7,7,False,Sun 05 Oct 2025 15:30,2025-10-05,Brentford,Man City,Finished,0-1,4,3,,SGW
+77,8,8,False,Sat 18 Oct 2025 11:30,2025-10-18,Nott'm Forest,Chelsea,Finished,0-3,3,3,,SGW
+71,8,8,False,Sat 18 Oct 2025 14:00,2025-10-18,Brighton,Newcastle,Finished,2-1,3,4,,SGW
+72,8,8,False,Sat 18 Oct 2025 14:00,2025-10-18,Burnley,Leeds,Finished,2-0,2,2,,SGW
+73,8,8,False,Sat 18 Oct 2025 14:00,2025-10-18,Crystal Palace,Bournemouth,Finished,3-3,3,3,,SGW
+76,8,8,False,Sat 18 Oct 2025 14:00,2025-10-18,Man City,Everton,Finished,2-0,3,5,,SGW
+78,8,8,False,Sat 18 Oct 2025 14:00,2025-10-18,Sunderland,Wolves,Finished,2-0,1,3,,SGW
+74,8,8,False,Sat 18 Oct 2025 16:30,2025-10-18,Fulham,Arsenal,Finished,0-1,4,3,,SGW
+79,8,8,False,Sun 19 Oct 2025 13:00,2025-10-19,Spurs,Aston Villa,Finished,1-2,3,3,,SGW
+75,8,8,False,Sun 19 Oct 2025 15:30,2025-10-19,Liverpool,Man Utd,Finished,1-2,3,4,,SGW
+80,8,8,False,Mon 20 Oct 2025 19:00,2025-10-20,West Ham,Brentford,Finished,0-2,3,3,,SGW
+87,9,9,False,Fri 24 Oct 2025 19:00,2025-10-24,Leeds,West Ham,Finished,2-1,2,3,,SGW
+85,9,9,False,Sat 25 Oct 2025 14:00,2025-10-25,Chelsea,Sunderland,Finished,1-2,2,3,,SGW
+89,9,9,False,Sat 25 Oct 2025 14:00,2025-10-25,Newcastle,Fulham,Finished,2-1,3,3,,SGW
+88,9,9,False,Sat 25 Oct 2025 16:30,2025-10-25,Man Utd,Brighton,Finished,4-2,3,4,,SGW
+84,9,9,False,Sat 25 Oct 2025 19:00,2025-10-25,Brentford,Liverpool,Finished,3-2,3,3,,SGW
+81,9,9,False,Sun 26 Oct 2025 14:00,2025-10-26,Arsenal,Crystal Palace,Finished,1-0,3,5,,SGW
+82,9,9,False,Sun 26 Oct 2025 14:00,2025-10-26,Aston Villa,Man City,Finished,1-0,4,4,,SGW
+83,9,9,False,Sun 26 Oct 2025 14:00,2025-10-26,Bournemouth,Nott'm Forest,Finished,2-0,3,4,,SGW
+90,9,9,False,Sun 26 Oct 2025 14:00,2025-10-26,Wolves,Burnley,Finished,2-3,1,2,,SGW
+86,9,9,False,Sun 26 Oct 2025 16:30,2025-10-26,Everton,Spurs,Finished,0-3,3,3,,SGW
+91,10,10,False,Sat 01 Nov 2025 15:00,2025-11-01,Brighton,Leeds,Finished,3-0,2,4,,SGW
+92,10,10,False,Sat 01 Nov 2025 15:00,2025-11-01,Burnley,Arsenal,Finished,0-2,4,2,,SGW
+93,10,10,False,Sat 01 Nov 2025 15:00,2025-11-01,Crystal Palace,Brentford,Finished,2-0,3,3,,SGW
+94,10,10,False,Sat 01 Nov 2025 15:00,2025-11-01,Fulham,Wolves,Finished,3-0,1,3,,SGW
+97,10,10,False,Sat 01 Nov 2025 15:00,2025-11-01,Nott'm Forest,Man Utd,Finished,2-2,3,3,,SGW
+99,10,10,False,Sat 01 Nov 2025 17:30,2025-11-01,Spurs,Chelsea,Finished,0-1,3,3,,SGW
+95,10,10,False,Sat 01 Nov 2025 20:00,2025-11-01,Liverpool,Aston Villa,Finished,2-0,3,4,,SGW
+100,10,10,False,Sun 02 Nov 2025 14:00,2025-11-02,West Ham,Newcastle,Finished,3-1,3,3,,SGW
+96,10,10,False,Sun 02 Nov 2025 16:30,2025-11-02,Man City,Bournemouth,Finished,3-1,3,5,,SGW
+98,10,10,False,Mon 03 Nov 2025 20:00,2025-11-03,Sunderland,Everton,Finished,1-1,3,3,,SGW
+109,11,11,False,Sat 08 Nov 2025 12:30,2025-11-08,Spurs,Man Utd,Finished,2-2,3,3,,SGW
+105,11,11,False,Sat 08 Nov 2025 15:00,2025-11-08,Everton,Fulham,Finished,2-0,3,3,,SGW
+110,11,11,False,Sat 08 Nov 2025 15:00,2025-11-08,West Ham,Burnley,Finished,3-2,1,3,,SGW
+108,11,11,False,Sat 08 Nov 2025 17:30,2025-11-08,Sunderland,Arsenal,Finished,2-2,4,3,,SGW
+103,11,11,False,Sat 08 Nov 2025 20:00,2025-11-08,Chelsea,Wolves,Finished,3-0,1,3,,SGW
+101,11,11,False,Sun 09 Nov 2025 14:00,2025-11-09,Aston Villa,Bournemouth,Finished,4-0,3,4,,SGW
+102,11,11,False,Sun 09 Nov 2025 14:00,2025-11-09,Brentford,Newcastle,Finished,3-1,3,3,,SGW
+104,11,11,False,Sun 09 Nov 2025 14:00,2025-11-09,Crystal Palace,Brighton,Finished,0-0,3,3,,SGW
+107,11,11,False,Sun 09 Nov 2025 14:00,2025-11-09,Nott'm Forest,Leeds,Finished,3-1,2,3,,SGW
+106,11,11,False,Sun 09 Nov 2025 16:30,2025-11-09,Man City,Liverpool,Finished,3-0,3,5,,SGW
+114,12,12,False,Sat 22 Nov 2025 12:30,2025-11-22,Burnley,Chelsea,Finished,0-2,3,2,,SGW
+112,12,12,False,Sat 22 Nov 2025 15:00,2025-11-22,Bournemouth,West Ham,Finished,2-2,2,4,,SGW
+113,12,12,False,Sat 22 Nov 2025 15:00,2025-11-22,Brighton,Brentford,Finished,2-1,3,4,,SGW
+115,12,12,False,Sat 22 Nov 2025 15:00,2025-11-22,Fulham,Sunderland,Finished,1-0,2,3,,SGW
+117,12,12,False,Sat 22 Nov 2025 15:00,2025-11-22,Liverpool,Nott'm Forest,Finished,0-3,3,4,,SGW
+120,12,12,False,Sat 22 Nov 2025 15:00,2025-11-22,Wolves,Crystal Palace,Finished,0-2,3,2,,SGW
+119,12,12,False,Sat 22 Nov 2025 17:30,2025-11-22,Newcastle,Man City,Finished,2-1,4,3,,SGW
+116,12,12,False,Sun 23 Nov 2025 14:00,2025-11-23,Leeds,Aston Villa,Finished,1-2,3,3,,SGW
+111,12,12,False,Sun 23 Nov 2025 16:30,2025-11-23,Arsenal,Spurs,Finished,4-1,3,5,,SGW
+118,12,12,False,Mon 24 Nov 2025 20:00,2025-11-24,Man Utd,Everton,Finished,0-1,3,4,,SGW
+122,13,13,False,Sat 29 Nov 2025 15:00,2025-11-29,Brentford,Burnley,Finished,3-1,1,3,,SGW
+126,13,13,False,Sat 29 Nov 2025 15:00,2025-11-29,Man City,Leeds,Finished,3-2,2,5,,SGW
+128,13,13,False,Sat 29 Nov 2025 15:00,2025-11-29,Sunderland,Bournemouth,Finished,3-2,3,3,,SGW
+125,13,13,False,Sat 29 Nov 2025 17:30,2025-11-29,Everton,Newcastle,Finished,1-4,3,3,,SGW
+129,13,13,False,Sat 29 Nov 2025 20:00,2025-11-29,Spurs,Fulham,Finished,1-2,3,3,,SGW
+124,13,13,False,Sun 30 Nov 2025 12:00,2025-11-30,Crystal Palace,Man Utd,Finished,1-2,3,3,,SGW
+121,13,13,False,Sun 30 Nov 2025 14:05,2025-11-30,Aston Villa,Wolves,Finished,1-0,1,4,,SGW
+127,13,13,False,Sun 30 Nov 2025 14:05,2025-11-30,Nott'm Forest,Brighton,Finished,0-2,3,3,,SGW
+130,13,13,False,Sun 30 Nov 2025 14:05,2025-11-30,West Ham,Liverpool,Finished,0-2,3,3,,SGW
+123,13,13,False,Sun 30 Nov 2025 16:30,2025-11-30,Chelsea,Arsenal,Finished,1-1,4,3,,SGW
+132,14,14,False,Tue 02 Dec 2025 19:30,2025-12-02,Bournemouth,Everton,Finished,0-1,3,4,,SGW
+135,14,14,False,Tue 02 Dec 2025 19:30,2025-12-02,Fulham,Man City,Finished,4-5,4,3,,SGW
+139,14,14,False,Tue 02 Dec 2025 20:15,2025-12-02,Newcastle,Spurs,Finished,2-2,3,3,,SGW
+131,14,14,False,Wed 03 Dec 2025 19:30,2025-12-03,Arsenal,Brentford,Finished,2-0,3,5,,SGW
+133,14,14,False,Wed 03 Dec 2025 19:30,2025-12-03,Brighton,Aston Villa,Finished,3-4,3,4,,SGW
+134,14,14,False,Wed 03 Dec 2025 19:30,2025-12-03,Burnley,Crystal Palace,Finished,0-1,3,2,,SGW
+140,14,14,False,Wed 03 Dec 2025 19:30,2025-12-03,Wolves,Nott'm Forest,Finished,0-1,3,2,,SGW
+136,14,14,False,Wed 03 Dec 2025 20:15,2025-12-03,Leeds,Chelsea,Finished,3-1,3,3,,SGW
+137,14,14,False,Wed 03 Dec 2025 20:15,2025-12-03,Liverpool,Sunderland,Finished,1-1,2,4,,SGW
+138,14,14,False,Thu 04 Dec 2025 20:00,2025-12-04,Man Utd,West Ham,Finished,1-1,2,4,,SGW
+141,15,15,False,Sat 06 Dec 2025 12:30,2025-12-06,Aston Villa,Arsenal,Finished,2-1,4,4,,SGW
+142,15,15,False,Sat 06 Dec 2025 15:00,2025-12-06,Bournemouth,Chelsea,Finished,0-0,3,4,,SGW
+144,15,15,False,Sat 06 Dec 2025 15:00,2025-12-06,Everton,Nott'm Forest,Finished,3-0,3,3,,SGW
+147,15,15,False,Sat 06 Dec 2025 15:00,2025-12-06,Man City,Sunderland,Finished,3-0,2,5,,SGW
+148,15,15,False,Sat 06 Dec 2025 15:00,2025-12-06,Newcastle,Burnley,Finished,2-1,1,3,,SGW
+149,15,15,False,Sat 06 Dec 2025 15:00,2025-12-06,Spurs,Brentford,Finished,2-0,3,3,,SGW
+146,15,15,False,Sat 06 Dec 2025 17:30,2025-12-06,Leeds,Liverpool,Finished,3-3,3,3,,SGW
+143,15,15,False,Sun 07 Dec 2025 14:00,2025-12-07,Brighton,West Ham,Finished,1-1,2,4,,SGW
+145,15,15,False,Sun 07 Dec 2025 16:30,2025-12-07,Fulham,Crystal Palace,Finished,1-2,3,3,,SGW
+150,15,15,False,Mon 08 Dec 2025 20:00,2025-12-08,Wolves,Man Utd,Finished,1-4,3,2,,SGW
+154,16,16,False,Sat 13 Dec 2025 15:00,2025-12-13,Chelsea,Everton,Finished,2-0,3,3,,SGW
+156,16,16,False,Sat 13 Dec 2025 15:00,2025-12-13,Liverpool,Brighton,Finished,2-0,3,4,,SGW
+153,16,16,False,Sat 13 Dec 2025 17:30,2025-12-13,Burnley,Fulham,Finished,2-3,3,2,,SGW
+151,16,16,False,Sat 13 Dec 2025 20:00,2025-12-13,Arsenal,Wolves,Finished,2-1,1,5,,SGW
+155,16,16,False,Sun 14 Dec 2025 14:00,2025-12-14,Crystal Palace,Man City,Finished,0-3,4,3,,SGW
+158,16,16,False,Sun 14 Dec 2025 14:00,2025-12-14,Nott'm Forest,Spurs,Finished,3-0,3,3,,SGW
+159,16,16,False,Sun 14 Dec 2025 14:00,2025-12-14,Sunderland,Newcastle,Finished,1-0,3,3,,SGW
+160,16,16,False,Sun 14 Dec 2025 14:00,2025-12-14,West Ham,Aston Villa,Finished,2-3,3,3,,SGW
+152,16,16,False,Sun 14 Dec 2025 16:30,2025-12-14,Brentford,Leeds,Finished,1-1,2,3,,SGW
+157,16,16,False,Mon 15 Dec 2025 20:00,2025-12-15,Man Utd,Bournemouth,Finished,4-4,3,4,,SGW
+168,17,17,False,Sat 20 Dec 2025 12:30,2025-12-20,Newcastle,Chelsea,Finished,2-2,3,3,,SGW
+162,17,17,False,Sat 20 Dec 2025 15:00,2025-12-20,Bournemouth,Burnley,Finished,1-1,1,4,,SGW
+163,17,17,False,Sat 20 Dec 2025 15:00,2025-12-20,Brighton,Sunderland,Finished,0-0,2,4,,SGW
+167,17,17,False,Sat 20 Dec 2025 15:00,2025-12-20,Man City,West Ham,Finished,3-0,2,5,,SGW
+170,17,17,False,Sat 20 Dec 2025 15:00,2025-12-20,Wolves,Brentford,Finished,0-2,3,2,,SGW
+169,17,17,False,Sat 20 Dec 2025 17:30,2025-12-20,Spurs,Liverpool,Finished,1-2,3,3,,SGW
+164,17,17,False,Sat 20 Dec 2025 20:00,2025-12-20,Everton,Arsenal,Finished,0-1,4,3,,SGW
+166,17,17,False,Sat 20 Dec 2025 20:00,2025-12-20,Leeds,Crystal Palace,Finished,4-1,3,3,,SGW
+161,17,17,False,Sun 21 Dec 2025 16:30,2025-12-21,Aston Villa,Man Utd,Finished,2-1,3,4,,SGW
+165,17,17,False,Mon 22 Dec 2025 20:00,2025-12-22,Fulham,Nott'm Forest,Finished,1-0,3,3,,SGW
+177,18,18,False,Fri 26 Dec 2025 20:00,2025-12-26,Man Utd,Newcastle,Finished,1-0,3,4,,SGW
+178,18,18,False,Sat 27 Dec 2025 12:30,2025-12-27,Nott'm Forest,Man City,Finished,1-2,4,3,,SGW
+171,18,18,False,Sat 27 Dec 2025 15:00,2025-12-27,Arsenal,Brighton,Finished,2-1,3,5,,SGW
+172,18,18,False,Sat 27 Dec 2025 15:00,2025-12-27,Brentford,Bournemouth,Finished,4-1,3,3,,SGW
+173,18,18,False,Sat 27 Dec 2025 15:00,2025-12-27,Burnley,Everton,Finished,0-0,3,2,,SGW
+176,18,18,False,Sat 27 Dec 2025 15:00,2025-12-27,Liverpool,Wolves,Finished,2-1,1,4,,SGW
+180,18,18,False,Sat 27 Dec 2025 15:00,2025-12-27,West Ham,Fulham,Finished,0-1,3,3,,SGW
+174,18,18,False,Sat 27 Dec 2025 17:30,2025-12-27,Chelsea,Aston Villa,Finished,1-2,3,3,,SGW
+179,18,18,False,Sun 28 Dec 2025 14:00,2025-12-28,Sunderland,Leeds,Finished,1-1,2,3,,SGW
+175,18,18,False,Sun 28 Dec 2025 16:30,2025-12-28,Crystal Palace,Spurs,Finished,0-1,3,3,,SGW
+183,19,19,False,Tue 30 Dec 2025 19:30,2025-12-30,Burnley,Newcastle,Finished,1-3,3,2,,SGW
+184,19,19,False,Tue 30 Dec 2025 19:30,2025-12-30,Chelsea,Bournemouth,Finished,2-2,3,3,,SGW
+188,19,19,False,Tue 30 Dec 2025 19:30,2025-12-30,Nott'm Forest,Everton,Finished,0-2,3,3,,SGW
+190,19,19,False,Tue 30 Dec 2025 19:30,2025-12-30,West Ham,Brighton,Finished,2-2,3,3,,SGW
+181,19,19,False,Tue 30 Dec 2025 20:15,2025-12-30,Arsenal,Aston Villa,Finished,4-1,3,5,,SGW
+187,19,19,False,Tue 30 Dec 2025 20:15,2025-12-30,Man Utd,Wolves,Finished,1-1,1,4,,SGW
+185,19,19,False,Thu 01 Jan 2026 17:30,2026-01-01,Crystal Palace,Fulham,Finished,1-1,3,3,,SGW
+186,19,19,False,Thu 01 Jan 2026 17:30,2026-01-01,Liverpool,Leeds,Finished,0-0,2,4,,SGW
+182,19,19,False,Thu 01 Jan 2026 20:00,2026-01-01,Brentford,Spurs,Finished,0-0,3,3,,SGW
+189,19,19,False,Thu 01 Jan 2026 20:00,2026-01-01,Sunderland,Man City,Finished,0-0,4,3,,SGW
+191,20,20,False,Sat 03 Jan 2026 12:30,2026-01-03,Aston Villa,Nott'm Forest,Finished,3-1,3,4,,SGW
+193,20,20,False,Sat 03 Jan 2026 15:00,2026-01-03,Brighton,Burnley,Finished,2-0,1,4,,SGW
+200,20,20,False,Sat 03 Jan 2026 15:00,2026-01-03,Wolves,West Ham,Finished,3-0,2,2,,SGW
+192,20,20,False,Sat 03 Jan 2026 17:30,2026-01-03,Bournemouth,Arsenal,Finished,2-3,4,4,,SGW
+196,20,20,False,Sun 04 Jan 2026 12:30,2026-01-04,Leeds,Man Utd,Finished,1-1,3,3,,SGW
+194,20,20,False,Sun 04 Jan 2026 15:00,2026-01-04,Everton,Brentford,Finished,2-4,3,3,,SGW
+198,20,20,False,Sun 04 Jan 2026 15:00,2026-01-04,Newcastle,Crystal Palace,Finished,2-0,3,3,,SGW
+199,20,20,False,Sun 04 Jan 2026 15:00,2026-01-04,Spurs,Sunderland,Finished,1-1,2,3,,SGW
+195,20,20,False,Sun 04 Jan 2026 15:15,2026-01-04,Fulham,Liverpool,Finished,2-2,3,3,,SGW
+197,20,20,False,Sun 04 Jan 2026 17:30,2026-01-04,Man City,Chelsea,Finished,1-1,3,5,,SGW
+210,21,21,False,Tue 06 Jan 2026 20:00,2026-01-06,West Ham,Nott'm Forest,Finished,1-2,3,3,,SGW
+202,21,21,False,Wed 07 Jan 2026 19:30,2026-01-07,Bournemouth,Spurs,Finished,3-2,3,4,,SGW
+203,21,21,False,Wed 07 Jan 2026 19:30,2026-01-07,Brentford,Sunderland,Finished,3-0,2,3,,SGW
+205,21,21,False,Wed 07 Jan 2026 19:30,2026-01-07,Crystal Palace,Aston Villa,Finished,0-0,3,3,,SGW
+206,21,21,False,Wed 07 Jan 2026 19:30,2026-01-07,Everton,Wolves,Finished,1-1,1,3,,SGW
+207,21,21,False,Wed 07 Jan 2026 19:30,2026-01-07,Fulham,Chelsea,Finished,2-1,3,3,,SGW
+208,21,21,False,Wed 07 Jan 2026 19:30,2026-01-07,Man City,Brighton,Finished,1-1,3,5,,SGW
+204,21,21,False,Wed 07 Jan 2026 20:15,2026-01-07,Burnley,Man Utd,Finished,2-2,3,2,,SGW
+209,21,21,False,Wed 07 Jan 2026 20:15,2026-01-07,Newcastle,Leeds,Finished,4-3,2,3,,SGW
+201,21,21,False,Thu 08 Jan 2026 20:00,2026-01-08,Arsenal,Liverpool,Finished,0-0,3,5,,SGW
+216,22,22,False,Sat 17 Jan 2026 12:30,2026-01-17,Man Utd,Man City,Finished,2-0,4,4,,SGW
+213,22,22,False,Sat 17 Jan 2026 15:00,2026-01-17,Chelsea,Brentford,Finished,2-0,3,3,,SGW
+214,22,22,False,Sat 17 Jan 2026 15:00,2026-01-17,Leeds,Fulham,Finished,1-0,3,3,,SGW
+215,22,22,False,Sat 17 Jan 2026 15:00,2026-01-17,Liverpool,Burnley,Finished,1-1,1,4,,SGW
+219,22,22,False,Sat 17 Jan 2026 15:00,2026-01-17,Spurs,West Ham,Finished,1-2,2,3,,SGW
+218,22,22,False,Sat 17 Jan 2026 15:00,2026-01-17,Sunderland,Crystal Palace,Finished,2-1,3,3,,SGW
+217,22,22,False,Sat 17 Jan 2026 17:30,2026-01-17,Nott'm Forest,Arsenal,Finished,0-0,4,3,,SGW
+220,22,22,False,Sun 18 Jan 2026 14:00,2026-01-18,Wolves,Newcastle,Finished,0-0,3,2,,SGW
+211,22,22,False,Sun 18 Jan 2026 16:30,2026-01-18,Aston Villa,Everton,Finished,0-1,3,4,,SGW
+212,22,22,False,Mon 19 Jan 2026 20:00,2026-01-19,Brighton,Bournemouth,Finished,1-1,3,4,,SGW
+230,23,23,False,Sat 24 Jan 2026 12:30,2026-01-24,West Ham,Sunderland,Finished,3-1,2,3,,SGW
+224,23,23,False,Sat 24 Jan 2026 15:00,2026-01-24,Burnley,Spurs,Finished,2-2,3,2,,SGW
+227,23,23,False,Sat 24 Jan 2026 15:00,2026-01-24,Fulham,Brighton,Finished,2-1,3,3,,SGW
+228,23,23,False,Sat 24 Jan 2026 15:00,2026-01-24,Man City,Wolves,Finished,2-0,1,5,,SGW
+222,23,23,False,Sat 24 Jan 2026 17:30,2026-01-24,Bournemouth,Liverpool,Finished,3-2,3,4,,SGW
+223,23,23,False,Sun 25 Jan 2026 14:00,2026-01-25,Brentford,Nott'm Forest,Finished,0-2,3,3,,SGW
+225,23,23,False,Sun 25 Jan 2026 14:00,2026-01-25,Crystal Palace,Chelsea,Finished,1-3,3,3,,SGW
+229,23,23,False,Sun 25 Jan 2026 14:00,2026-01-25,Newcastle,Aston Villa,Finished,0-2,3,3,,SGW
+221,23,23,False,Sun 25 Jan 2026 16:30,2026-01-25,Arsenal,Man Utd,Finished,2-3,3,5,,SGW
+226,23,23,False,Mon 26 Jan 2026 20:00,2026-01-26,Everton,Leeds,Finished,1-1,2,3,,SGW
+232,24,24,False,Sat 31 Jan 2026 15:00,2026-01-31,Brighton,Everton,Finished,1-1,3,4,,SGW
+234,24,24,False,Sat 31 Jan 2026 15:00,2026-01-31,Leeds,Arsenal,Finished,0-4,4,3,,SGW
+240,24,24,False,Sat 31 Jan 2026 15:00,2026-01-31,Wolves,Bournemouth,Finished,0-2,3,2,,SGW
+233,24,24,False,Sat 31 Jan 2026 17:30,2026-01-31,Chelsea,West Ham,Finished,3-2,2,3,,SGW
+235,24,24,False,Sat 31 Jan 2026 20:00,2026-01-31,Liverpool,Newcastle,Finished,4-1,3,4,,SGW
+231,24,24,False,Sun 01 Feb 2026 14:00,2026-02-01,Aston Villa,Brentford,Finished,0-1,3,4,,SGW
+236,24,24,False,Sun 01 Feb 2026 14:00,2026-02-01,Man Utd,Fulham,Finished,3-2,3,4,,SGW
+237,24,24,False,Sun 01 Feb 2026 14:00,2026-02-01,Nott'm Forest,Crystal Palace,Finished,1-1,3,3,,SGW
+239,24,24,False,Sun 01 Feb 2026 16:30,2026-02-01,Spurs,Man City,Finished,2-2,4,3,,SGW
+238,24,24,False,Mon 02 Feb 2026 20:00,2026-02-02,Sunderland,Burnley,Finished,3-0,1,3,,SGW
+246,25,25,False,Fri 06 Feb 2026 20:00,2026-02-06,Leeds,Nott'm Forest,Finished,3-1,3,3,,SGW
+248,25,25,False,Sat 07 Feb 2026 12:30,2026-02-07,Man Utd,Spurs,Finished,2-0,3,4,,SGW
+241,25,25,False,Sat 07 Feb 2026 15:00,2026-02-07,Arsenal,Sunderland,Finished,3-0,2,5,,SGW
+242,25,25,False,Sat 07 Feb 2026 15:00,2026-02-07,Bournemouth,Aston Villa,Finished,1-1,3,4,,SGW
+244,25,25,False,Sat 07 Feb 2026 15:00,2026-02-07,Burnley,West Ham,Finished,0-2,2,2,,SGW
+245,25,25,False,Sat 07 Feb 2026 15:00,2026-02-07,Fulham,Everton,Finished,1-2,3,3,,SGW
+250,25,25,False,Sat 07 Feb 2026 15:00,2026-02-07,Wolves,Chelsea,Finished,1-3,3,2,,SGW
+249,25,25,False,Sat 07 Feb 2026 17:30,2026-02-07,Newcastle,Brentford,Finished,2-3,3,3,,SGW
+243,25,25,False,Sun 08 Feb 2026 14:00,2026-02-08,Brighton,Crystal Palace,Finished,0-1,3,4,,SGW
+247,25,25,False,Sun 08 Feb 2026 16:30,2026-02-08,Liverpool,Man City,Finished,1-2,4,4,,SGW
+253,26,26,False,Tue 10 Feb 2026 19:30,2026-02-10,Chelsea,Leeds,Finished,2-2,2,3,,SGW
+255,26,26,False,Tue 10 Feb 2026 19:30,2026-02-10,Everton,Bournemouth,Finished,1-2,3,3,,SGW
+259,26,26,False,Tue 10 Feb 2026 19:30,2026-02-10,Spurs,Newcastle,Finished,1-2,3,3,,SGW
+260,26,26,False,Tue 10 Feb 2026 20:15,2026-02-10,West Ham,Man Utd,Finished,1-1,3,3,,SGW
+251,26,26,False,Wed 11 Feb 2026 19:30,2026-02-11,Aston Villa,Brighton,Finished,1-0,3,4,,SGW
+256,26,26,False,Wed 11 Feb 2026 19:30,2026-02-11,Man City,Fulham,Finished,3-0,3,5,,SGW
+257,26,26,False,Wed 11 Feb 2026 19:30,2026-02-11,Nott'm Forest,Wolves,Finished,0-0,1,3,,DGW
+254,26,26,False,Wed 11 Feb 2026 19:40,2026-02-11,Crystal Palace,Burnley,Finished,2-3,1,3,,SGW
+258,26,26,False,Wed 11 Feb 2026 20:15,2026-02-11,Sunderland,Liverpool,Finished,0-1,3,3,,SGW
+252,26,26,False,Thu 12 Feb 2026 20:00,2026-02-12,Brentford,Arsenal,Finished,1-1,4,3,,DGW
+310,26,26,False,Wed 18 Feb 2026 20:00,2026-02-18,Wolves,Arsenal,Finished,2-2,4,2,,DGW
+261,27,27,False,Sat 21 Feb 2026 15:00,2026-02-21,Aston Villa,Leeds,Finished,1-1,2,4,,SGW
+262,27,27,False,Sat 21 Feb 2026 15:00,2026-02-21,Brentford,Brighton,Finished,0-2,3,3,,SGW
+263,27,27,False,Sat 21 Feb 2026 15:00,2026-02-21,Chelsea,Burnley,Finished,1-1,1,3,,SGW
+270,27,27,False,Sat 21 Feb 2026 17:30,2026-02-21,West Ham,Bournemouth,Finished,0-0,3,3,,SGW
+266,27,27,False,Sat 21 Feb 2026 20:00,2026-02-21,Man City,Newcastle,Finished,2-1,3,5,,SGW
+264,27,27,False,Sun 22 Feb 2026 14:00,2026-02-22,Crystal Palace,Wolves,Finished,1-0,1,3,,SGW
+267,27,27,False,Sun 22 Feb 2026 14:00,2026-02-22,Nott'm Forest,Liverpool,Finished,0-1,3,3,,SGW
+268,27,27,False,Sun 22 Feb 2026 14:00,2026-02-22,Sunderland,Fulham,Finished,1-3,3,3,,SGW
+269,27,27,False,Sun 22 Feb 2026 16:30,2026-02-22,Spurs,Arsenal,Finished,1-4,4,3,,SGW
+265,27,27,False,Mon 23 Feb 2026 20:00,2026-02-23,Everton,Man Utd,Finished,0-1,3,3,,SGW
+280,28,28,False,Fri 27 Feb 2026 20:00,2026-02-27,Wolves,Aston Villa,Finished,2-0,3,2,,SGW
+272,28,28,False,Sat 28 Feb 2026 12:30,2026-02-28,Bournemouth,Sunderland,Finished,1-1,2,4,,SGW
+274,28,28,False,Sat 28 Feb 2026 15:00,2026-02-28,Burnley,Brentford,Finished,3-4,3,2,,SGW
+277,28,28,False,Sat 28 Feb 2026 15:00,2026-02-28,Liverpool,West Ham,Finished,5-2,2,4,,SGW
+279,28,28,False,Sat 28 Feb 2026 15:00,2026-02-28,Newcastle,Everton,Finished,2-3,3,3,,SGW
+276,28,28,False,Sat 28 Feb 2026 17:30,2026-02-28,Leeds,Man City,Finished,0-1,4,3,,SGW
+273,28,28,False,Sun 01 Mar 2026 14:00,2026-03-01,Brighton,Nott'm Forest,Finished,2-1,3,4,,SGW
+275,28,28,False,Sun 01 Mar 2026 14:00,2026-03-01,Fulham,Spurs,Finished,2-1,3,3,,SGW
+278,28,28,False,Sun 01 Mar 2026 14:00,2026-03-01,Man Utd,Crystal Palace,Finished,2-1,3,4,,SGW
+271,28,28,False,Sun 01 Mar 2026 16:30,2026-03-01,Arsenal,Chelsea,Finished,2-1,3,5,,SGW
+282,29,29,False,Tue 03 Mar 2026 19:30,2026-03-03,Bournemouth,Brentford,Finished,0-0,3,4,,SGW
+284,29,29,False,Tue 03 Mar 2026 19:30,2026-03-03,Everton,Burnley,Finished,2-0,1,3,,SGW
+286,29,29,False,Tue 03 Mar 2026 19:30,2026-03-03,Leeds,Sunderland,Finished,0-1,2,3,,SGW
+290,29,29,False,Tue 03 Mar 2026 20:15,2026-03-03,Wolves,Liverpool,Finished,2-1,3,2,,SGW
+281,29,29,False,Wed 04 Mar 2026 19:30,2026-03-04,Aston Villa,Chelsea,Finished,1-4,3,4,,SGW
+283,29,29,False,Wed 04 Mar 2026 19:30,2026-03-04,Brighton,Arsenal,Finished,0-1,4,4,,SGW
+285,29,29,False,Wed 04 Mar 2026 19:30,2026-03-04,Fulham,West Ham,Finished,0-1,2,3,,SGW
+287,29,29,False,Wed 04 Mar 2026 19:30,2026-03-04,Man City,Nott'm Forest,Finished,2-2,3,5,,SGW
+288,29,29,False,Wed 04 Mar 2026 20:15,2026-03-04,Newcastle,Man Utd,Finished,2-1,3,3,,SGW
+289,29,29,False,Thu 05 Mar 2026 20:00,2026-03-05,Spurs,Crystal Palace,Finished,1-3,3,3,,SGW
+293,30,30,False,Sat 14 Mar 2026 15:00,2026-03-14,Burnley,Bournemouth,Finished,0-0,3,2,,SGW
+299,30,30,False,Sat 14 Mar 2026 15:00,2026-03-14,Sunderland,Brighton,Finished,0-1,3,3,,SGW
+291,30,30,False,Sat 14 Mar 2026 17:30,2026-03-14,Arsenal,Everton,Finished,2-0,3,5,,SGW
+294,30,30,False,Sat 14 Mar 2026 17:30,2026-03-14,Chelsea,Newcastle,Finished,0-1,3,3,,SGW
+300,30,30,False,Sat 14 Mar 2026 20:00,2026-03-14,West Ham,Man City,Finished,1-1,4,3,,SGW
+295,30,30,False,Sun 15 Mar 2026 14:00,2026-03-15,Crystal Palace,Leeds,Finished,0-0,2,3,,SGW
+297,30,30,False,Sun 15 Mar 2026 14:00,2026-03-15,Man Utd,Aston Villa,Finished,3-1,3,4,,SGW
+298,30,30,False,Sun 15 Mar 2026 14:00,2026-03-15,Nott'm Forest,Fulham,Finished,0-0,3,3,,SGW
+296,30,30,False,Sun 15 Mar 2026 16:30,2026-03-15,Liverpool,Spurs,Finished,1-1,3,4,,SGW
+292,30,30,False,Mon 16 Mar 2026 20:00,2026-03-16,Brentford,Wolves,Finished,2-2,1,3,,SGW
+302,31,31,False,Fri 20 Mar 2026 20:00,2026-03-20,Bournemouth,Man Utd,Finished,2-2,3,4,,SGW
+303,31,31,False,Sat 21 Mar 2026 12:45,2026-03-21,Brighton,Liverpool,Finished,2-1,3,4,,SGW
+305,31,31,False,Sat 21 Mar 2026 15:00,2026-03-21,Fulham,Burnley,Finished,3-1,1,3,,SGW
+304,31,31,False,Sat 21 Mar 2026 17:30,2026-03-21,Everton,Chelsea,Finished,3-0,3,3,,SGW
+306,31,31,False,Sat 21 Mar 2026 20:00,2026-03-21,Leeds,Brentford,Finished,0-0,3,3,,SGW
+308,31,31,False,Sun 22 Mar 2026 12:00,2026-03-22,Newcastle,Sunderland,Finished,1-2,2,3,,SGW
+301,31,31,False,Sun 22 Mar 2026 14:15,2026-03-22,Aston Villa,West Ham,Finished,2-0,2,4,,SGW
+309,31,31,False,Sun 22 Mar 2026 14:15,2026-03-22,Spurs,Nott'm Forest,Finished,0-3,3,3,,SGW
+320,32,32,False,Fri 10 Apr 2026 19:00,2026-04-10,West Ham,Wolves,Finished,4-0,1,3,,SGW
+311,32,32,False,Sat 11 Apr 2026 11:30,2026-04-11,Arsenal,Bournemouth,Finished,1-2,3,5,,SGW
+312,32,32,False,Sat 11 Apr 2026 14:00,2026-04-11,Brentford,Everton,Finished,2-2,3,3,,SGW
+313,32,32,False,Sat 11 Apr 2026 14:00,2026-04-11,Burnley,Brighton,Finished,0-2,3,2,,SGW
+316,32,32,False,Sat 11 Apr 2026 16:30,2026-04-11,Liverpool,Fulham,Finished,2-0,3,4,,SGW
+315,32,32,False,Sun 12 Apr 2026 13:00,2026-04-12,Crystal Palace,Newcastle,Finished,2-1,3,3,,SGW
+318,32,32,False,Sun 12 Apr 2026 13:00,2026-04-12,Nott'm Forest,Aston Villa,Finished,1-1,3,3,,SGW
+319,32,32,False,Sun 12 Apr 2026 13:00,2026-04-12,Sunderland,Spurs,Finished,1-0,3,3,,SGW
+314,32,32,False,Sun 12 Apr 2026 15:30,2026-04-12,Chelsea,Man City,Finished,0-3,4,3,,SGW
+317,32,32,False,Mon 13 Apr 2026 19:00,2026-04-13,Man Utd,Leeds,Finished,1-2,2,4,,SGW
+322,33,33,False,Sat 18 Apr 2026 11:30,2026-04-18,Brentford,Fulham,Finished,0-0,3,3,,SGW
+326,33,33,False,Sat 18 Apr 2026 14:00,2026-04-18,Leeds,Wolves,Finished,3-0,1,3,,DGW
+328,33,33,False,Sat 18 Apr 2026 14:00,2026-04-18,Newcastle,Bournemouth,Finished,1-2,3,3,,DGW
+330,33,33,False,Sat 18 Apr 2026 16:30,2026-04-18,Spurs,Brighton,Finished,2-2,3,3,,DGW
+323,33,33,False,Sat 18 Apr 2026 19:00,2026-04-18,Chelsea,Man Utd,Finished,0-1,3,3,,DGW
+321,33,33,False,Sun 19 Apr 2026 13:00,2026-04-19,Aston Villa,Sunderland,Finished,4-3,2,4,,SGW
+325,33,33,False,Sun 19 Apr 2026 13:00,2026-04-19,Everton,Liverpool,Finished,1-2,3,3,,SGW
+329,33,33,False,Sun 19 Apr 2026 13:00,2026-04-19,Nott'm Forest,Burnley,Finished,4-1,1,3,,DGW
+327,33,33,False,Sun 19 Apr 2026 15:30,2026-04-19,Man City,Arsenal,Finished,2-1,4,5,,DGW
+324,33,33,False,Mon 20 Apr 2026 19:00,2026-04-20,Crystal Palace,West Ham,Finished,0-0,2,3,,SGW
+333,33,33,False,Tue 21 Apr 2026 19:00,2026-04-21,Brighton,Chelsea,Finished,3-0,3,4,,DGW
+332,33,33,False,Wed 22 Apr 2026 19:00,2026-04-22,Bournemouth,Leeds,Finished,2-2,2,4,,DGW
+334,33,33,False,Wed 22 Apr 2026 19:00,2026-04-22,Burnley,Man City,Finished,0-1,4,2,,DGW
+338,34,34,False,Fri 24 Apr 2026 19:00,2026-04-24,Sunderland,Nott'm Forest,Finished,0-5,3,3,,SGW
+335,34,34,False,Sat 25 Apr 2026 11:30,2026-04-25,Fulham,Aston Villa,Finished,1-0,3,3,,SGW
+336,34,34,False,Sat 25 Apr 2026 14:00,2026-04-25,Liverpool,Crystal Palace,Finished,3-1,3,4,,SGW
+339,34,34,False,Sat 25 Apr 2026 14:00,2026-04-25,West Ham,Everton,Finished,2-1,3,3,,SGW
+340,34,34,False,Sat 25 Apr 2026 14:00,2026-04-25,Wolves,Spurs,Finished,0-1,3,2,,SGW
+331,34,34,False,Sat 25 Apr 2026 16:30,2026-04-25,Arsenal,Newcastle,Finished,1-0,3,5,,SGW
+337,34,34,False,Mon 27 Apr 2026 19:00,2026-04-27,Man Utd,Brentford,Finished,2-1,3,4,,SGW
+347,35,35,False,Fri 01 May 2026 19:00,2026-05-01,Leeds,Burnley,Upcoming,,1,3,,SGW
+344,35,35,False,Sat 02 May 2026 14:00,2026-05-02,Brentford,West Ham,Upcoming,,2,3,,SGW
+349,35,35,False,Sat 02 May 2026 14:00,2026-05-02,Newcastle,Brighton,Upcoming,,3,3,,SGW
+350,35,35,False,Sat 02 May 2026 14:00,2026-05-02,Wolves,Sunderland,Upcoming,,2,2,,SGW
+341,35,35,False,Sat 02 May 2026 16:30,2026-05-02,Arsenal,Fulham,Upcoming,,3,5,,SGW
+343,35,35,False,Sun 03 May 2026 13:00,2026-05-03,Bournemouth,Crystal Palace,Upcoming,,3,4,,SGW
+348,35,35,False,Sun 03 May 2026 14:30,2026-05-03,Man Utd,Liverpool,Upcoming,,3,4,,SGW
+342,35,35,False,Sun 03 May 2026 18:00,2026-05-03,Aston Villa,Spurs,Upcoming,,3,4,,SGW
+345,35,35,False,Mon 04 May 2026 14:00,2026-05-04,Chelsea,Nott'm Forest,Upcoming,,3,3,,SGW
+346,35,35,False,Mon 04 May 2026 19:00,2026-05-04,Everton,Man City,Upcoming,,4,3,,SGW
+355,36,36,False,Sat 09 May 2026 11:30,2026-05-09,Liverpool,Chelsea,Upcoming,,3,4,,SGW
+351,36,36,False,Sat 09 May 2026 14:00,2026-05-09,Brighton,Wolves,Upcoming,,1,4,,SGW
+354,36,36,False,Sat 09 May 2026 14:00,2026-05-09,Fulham,Bournemouth,Upcoming,,3,3,,SGW
+358,36,36,False,Sat 09 May 2026 14:00,2026-05-09,Sunderland,Man Utd,Upcoming,,3,3,,SGW
+356,36,36,False,Sat 09 May 2026 16:30,2026-05-09,Man City,Brentford,Upcoming,,3,5,,DGW
+352,36,36,False,Sun 10 May 2026 13:00,2026-05-10,Burnley,Aston Villa,Upcoming,,3,2,,SGW
+353,36,36,False,Sun 10 May 2026 13:00,2026-05-10,Crystal Palace,Everton,Upcoming,,3,3,,DGW
+357,36,36,False,Sun 10 May 2026 13:00,2026-05-10,Nott'm Forest,Newcastle,Upcoming,,3,3,,SGW
+360,36,36,False,Sun 10 May 2026 15:30,2026-05-10,West Ham,Arsenal,Upcoming,,4,3,,SGW
+359,36,36,False,Mon 11 May 2026 19:00,2026-05-11,Spurs,Leeds,Upcoming,,2,3,,SGW
+307,36,36,False,Wed 13 May 2026 19:00,2026-05-13,Man City,Crystal Palace,Upcoming,,3,5,,DGW
+362,37,37,False,Sun 17 May 2026 11:30,2026-05-17,Aston Villa,Liverpool,Upcoming,,3,4,,SGW
+368,37,37,False,Sun 17 May 2026 11:30,2026-05-17,Man Utd,Nott'm Forest,Upcoming,,3,4,,SGW
+364,37,37,False,Sun 17 May 2026 14:00,2026-05-17,Brentford,Crystal Palace,Upcoming,,3,3,,SGW
+366,37,37,False,Sun 17 May 2026 14:00,2026-05-17,Everton,Sunderland,Upcoming,,2,3,,SGW
+367,37,37,False,Sun 17 May 2026 14:00,2026-05-17,Leeds,Brighton,Upcoming,,3,3,,SGW
+370,37,37,False,Sun 17 May 2026 14:00,2026-05-17,Wolves,Fulham,Upcoming,,3,2,,SGW
+369,37,37,False,Sun 17 May 2026 16:30,2026-05-17,Newcastle,West Ham,Upcoming,,2,3,,SGW
+361,37,37,False,Mon 18 May 2026 19:00,2026-05-18,Arsenal,Burnley,Upcoming,,1,5,,SGW
+363,37,37,False,Tue 19 May 2026 18:30,2026-05-19,Bournemouth,Man City,Upcoming,,4,4,,SGW
+365,37,37,False,Tue 19 May 2026 19:15,2026-05-19,Chelsea,Spurs,Upcoming,,3,3,,SGW
+371,38,38,False,Sun 24 May 2026 15:00,2026-05-24,Brighton,Man Utd,Upcoming,,3,4,,SGW
+372,38,38,False,Sun 24 May 2026 15:00,2026-05-24,Burnley,Wolves,Upcoming,,1,2,,SGW
+373,38,38,False,Sun 24 May 2026 15:00,2026-05-24,Crystal Palace,Arsenal,Upcoming,,4,3,,SGW
+374,38,38,False,Sun 24 May 2026 15:00,2026-05-24,Fulham,Newcastle,Upcoming,,3,3,,SGW
+375,38,38,False,Sun 24 May 2026 15:00,2026-05-24,Liverpool,Brentford,Upcoming,,3,4,,SGW
+376,38,38,False,Sun 24 May 2026 15:00,2026-05-24,Man City,Aston Villa,Upcoming,,3,5,,SGW
+377,38,38,False,Sun 24 May 2026 15:00,2026-05-24,Nott'm Forest,Bournemouth,Upcoming,,3,3,,SGW
+379,38,38,False,Sun 24 May 2026 15:00,2026-05-24,Spurs,Everton,Upcoming,,3,3,,SGW
+378,38,38,False,Sun 24 May 2026 15:00,2026-05-24,Sunderland,Chelsea,Upcoming,,3,3,,SGW
+380,38,38,False,Sun 24 May 2026 15:00,2026-05-24,West Ham,Leeds,Upcoming,,2,3,,SGW
