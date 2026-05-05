@@ -125,15 +125,17 @@ def load_vaastav_player_gw(name, team, season):
     except Exception:
         return pd.DataFrame()
 
+CURRENT_SEASON = '2024-25'
+
 @st.cache_data(ttl=300)
 def load_player_career(web_name):
     """Season-by-season totals, combining vaastav history + current season."""
-    CURRENT_SEASON = '2024-25'
     rows = []
     try:
         with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
-            # Historical seasons from vaastav — exclude current season (covered by fpl API).
-            # Use LIKE for flexible name matching (vaastav name format can differ by season).
+            # Historical seasons from vaastav — explicitly exclude current season.
+            # Use positional ? params (named :param syntax unreliable with sqlite3+pandas).
+            name_like = f'%{web_name}%'
             df_hist = pd.read_sql("""
                 SELECT season, name, team, position,
                        COUNT(DISTINCT gw)  AS gws,
@@ -144,23 +146,23 @@ def load_player_career(web_name):
                        SUM(clean_sheets)   AS clean_sheets,
                        SUM(bonus)          AS bonus,
                        SUM(COALESCE(expected_goals, 0))  AS xg,
-                       SUM(COALESCE(expected_assists, 0)) AS xa
+                       SUM(COALESCE(expected_assists, 0)) AS xa,
+                       'vaastav' AS source
                 FROM vaastav_gw_stats
-                WHERE season != :season
+                WHERE season != ?
                   AND (
-                      LOWER(name) = LOWER(:name)
-                      OR LOWER(name) LIKE '%' || LOWER(:name) || '%'
-                      OR LOWER(:name) LIKE '%' || LOWER(name) || '%'
+                      LOWER(name) = LOWER(?)
+                      OR LOWER(name) LIKE LOWER(?)
+                      OR LOWER(?) LIKE '%' || LOWER(name) || '%'
                   )
                 GROUP BY season, name, team, position
                 ORDER BY season DESC
-            """, conn, params={'season': CURRENT_SEASON, 'name': web_name})
+            """, conn, params=(CURRENT_SEASON, web_name, name_like, web_name))
             rows.append(df_hist)
 
-            # Current season always from fpl API (most up to date)
+            # Current season always from fpl API — most up to date
             df_cur = pd.read_sql("""
-                SELECT :season AS season,
-                       p.web_name AS name, t.name AS team,
+                SELECT p.web_name AS name, t.name AS team,
                        CASE p.element_type
                            WHEN 1 THEN 'GK' WHEN 2 THEN 'DEF'
                            WHEN 3 THEN 'MID' WHEN 4 THEN 'FWD'
@@ -173,13 +175,16 @@ def load_player_career(web_name):
                        SUM(s.clean_sheets)   AS clean_sheets,
                        SUM(s.bonus)          AS bonus,
                        SUM(COALESCE(s.expected_goals, 0))   AS xg,
-                       SUM(COALESCE(s.expected_assists, 0)) AS xa
+                       SUM(COALESCE(s.expected_assists, 0)) AS xa,
+                       'FPL API' AS source
                 FROM fpl_player_gw_stats s
                 JOIN fpl_players p ON s.element_id = p.element_id
                 LEFT JOIN fpl_teams t ON p.team_id = t.team_id
-                WHERE LOWER(p.web_name) = LOWER(:name)
-                GROUP BY season, name, team, position
-            """, conn, params={'season': CURRENT_SEASON, 'name': web_name})
+                WHERE LOWER(p.web_name) = LOWER(?)
+                GROUP BY name, team, position
+            """, conn, params=(web_name,))
+            if not df_cur.empty:
+                df_cur.insert(0, 'season', CURRENT_SEASON)
             rows.append(df_cur)
 
     except Exception:
@@ -494,16 +499,19 @@ with tab_player:
 
             # Season table
             st.subheader("Season Breakdown")
-            career_show = career[['season', 'team', 'position', 'gws', 'minutes',
-                                  'total_points', 'goals_scored', 'assists',
-                                  'clean_sheets', 'bonus', 'xg', 'xa']].copy()
-            career_show['xg'] = career_show['xg'].round(2)
-            career_show['xa'] = career_show['xa'].round(2)
+            show_cols = ['season', 'team', 'position', 'gws', 'minutes',
+                         'total_points', 'goals_scored', 'assists',
+                         'clean_sheets', 'bonus', 'xg', 'xa']
+            if 'source' in career.columns:
+                show_cols.append('source')
+            career_show = career[show_cols].copy()
+            career_show['xg'] = pd.to_numeric(career_show['xg'], errors='coerce').round(2)
+            career_show['xa'] = pd.to_numeric(career_show['xa'], errors='coerce').round(2)
             career_show = career_show.rename(columns={
                 'season': 'Season', 'team': 'Team', 'position': 'Pos',
                 'gws': 'GWs', 'minutes': 'Mins', 'total_points': 'Pts',
                 'goals_scored': 'G', 'assists': 'A', 'clean_sheets': 'CS',
-                'bonus': 'Bonus', 'xg': 'xG', 'xa': 'xA'
+                'bonus': 'Bonus', 'xg': 'xG', 'xa': 'xA', 'source': 'Source'
             })
             st.dataframe(career_show, use_container_width=True, hide_index=True)
 
