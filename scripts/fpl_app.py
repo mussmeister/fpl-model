@@ -189,13 +189,17 @@ if not avail_gws:
     st.warning("No upcoming fixtures found.")
     st.stop()
 
-col_title, col_live, col_upload = st.columns([4, 1, 1])
+col_title, col_live, col_analytics, col_upload = st.columns([4, 1, 1, 1])
 with col_title:
     st.title("⚽ FPL Fixtures")
 with col_live:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔴 Live GW", use_container_width=True, type="primary"):
         st.switch_page("pages/live_gw.py")
+with col_analytics:
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("📊 Analytics", use_container_width=True):
+        st.switch_page("pages/analytics.py")
 with col_upload:
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("📤 Upload", use_container_width=True):
