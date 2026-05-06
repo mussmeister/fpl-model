@@ -614,7 +614,11 @@ with tab_player:
             st.warning("No current season data. Run `python scripts/fpl_api_pull.py --full` on the server.")
             st.stop()
 
-        players_df['pos'] = players_df['element_type'].map(POS_MAP)
+        players_df['pos']   = players_df['element_type'].map(POS_MAP)
+        players_df['label'] = (players_df['web_name'] + '  ·  '
+                               + players_df['team_short'].fillna('') + '  ·  '
+                               + players_df['pos'] + '  ·  '
+                               + players_df['now_cost'].apply(fmt_price))
 
         fc1, fc2 = st.columns(2)
         with fc1:
@@ -631,11 +635,6 @@ with tab_player:
         if filtered_df.empty:
             st.info("No players match the selected filters.")
             st.stop()
-
-        filtered_df['label'] = (filtered_df['web_name'] + '  ·  '
-                                + filtered_df['team_short'].fillna('') + '  ·  '
-                                + filtered_df['pos'] + '  ·  '
-                                + filtered_df['now_cost'].apply(fmt_price))
 
         selected_label = st.selectbox("Player", filtered_df['label'].tolist(),
                                       key="current_player_select")
