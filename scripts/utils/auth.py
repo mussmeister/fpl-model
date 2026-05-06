@@ -315,13 +315,21 @@ def require_auth():
     if st.session_state.get('auth_status'):
         return _get_user()
 
-    # ── Restore from cookie (handles HTML link / new-tab navigation) ──────────
+    # ── Restore from cookie (handles new-tab / page-refresh navigation) ───────
+    # Cookie components need one render cycle before they return values.
+    # On the first render we let the component load, then rerun to read it.
+    if _COOKIES and not st.session_state.get('_cc_init_done'):
+        st.session_state['_cc_init_done'] = True
+        st.stop()   # component sends cookie data → Streamlit auto-reruns
+
     if not st.session_state.get('_auth_logged_out'):
         p = _read_cookie(config)
         if p:
+            st.session_state.pop('_cc_init_done', None)
             _set_session(p['n'], p['e'], p['u'], p['r'])
             return _get_user()
 
     # ── Show login UI ─────────────────────────────────────────────────────────
+    st.session_state.pop('_cc_init_done', None)
     _render_login(config)
     st.stop()

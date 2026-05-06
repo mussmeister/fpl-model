@@ -163,7 +163,7 @@ def fixture_html(home, away, kickoff, hp, ap, abbr_map, show_header, nav_key="")
 
     href = f'?navigate={urllib.parse.quote(nav_key)}' if nav_key else '#'
     return f"""
-<a href="{href}" style="text-decoration:none;color:inherit;display:block;margin:4px 0 0 0;">
+<a href="{href}" target="_self" style="text-decoration:none;color:inherit;display:block;margin:4px 0 0 0;">
 <div style="border:1px solid #ddd;border-radius:10px;padding:10px 14px;
             background:#fff;{CARD_FONT}cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;"
      onmouseover="this.style.borderColor='#999';this.style.boxShadow='0 3px 10px rgba(0,0,0,0.1)'"
