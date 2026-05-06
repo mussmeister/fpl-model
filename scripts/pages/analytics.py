@@ -614,13 +614,30 @@ with tab_player:
             st.warning("No current season data. Run `python scripts/fpl_api_pull.py --full` on the server.")
             st.stop()
 
-        players_df['pos']   = players_df['element_type'].map(POS_MAP)
-        players_df['label'] = (players_df['web_name'] + '  ·  '
-                               + players_df['team_short'].fillna('') + '  ·  '
-                               + players_df['pos'] + '  ·  '
-                               + players_df['now_cost'].apply(fmt_price))
+        players_df['pos'] = players_df['element_type'].map(POS_MAP)
 
-        selected_label = st.selectbox("Search player", players_df['label'].tolist(),
+        fc1, fc2 = st.columns(2)
+        with fc1:
+            pos_f = st.selectbox("Position", ['All', 'GK', 'DEF', 'MID', 'FWD'],
+                                 key='cur_pos_f')
+        with fc2:
+            team_opts = ['All'] + sorted(players_df['team_name'].dropna().unique().tolist())
+            team_f = st.selectbox("Team", team_opts, key='cur_team_f')
+
+        filtered_df = players_df.copy()
+        if pos_f  != 'All': filtered_df = filtered_df[filtered_df['pos']       == pos_f]
+        if team_f != 'All': filtered_df = filtered_df[filtered_df['team_name'] == team_f]
+
+        if filtered_df.empty:
+            st.info("No players match the selected filters.")
+            st.stop()
+
+        filtered_df['label'] = (filtered_df['web_name'] + '  ·  '
+                                + filtered_df['team_short'].fillna('') + '  ·  '
+                                + filtered_df['pos'] + '  ·  '
+                                + filtered_df['now_cost'].apply(fmt_price))
+
+        selected_label = st.selectbox("Player", filtered_df['label'].tolist(),
                                       key="current_player_select")
         p = players_df[players_df['label'] == selected_label].iloc[0]
 
@@ -678,11 +695,30 @@ with tab_player:
             st.info(f"No data for {season}. Run `python scripts/ingest_vaastav.py --seasons {season}` on the server.")
             st.stop()
 
+        hfc1, hfc2 = st.columns(2)
+        with hfc1:
+            pos_opts_h = ['All'] + sorted(hist_players['position'].dropna().unique().tolist())
+            pos_f_h = st.selectbox("Position", pos_opts_h, key='hist_pos_f')
+        with hfc2:
+            team_opts_h = ['All'] + sorted(hist_players['team'].dropna().unique().tolist())
+            team_f_h = st.selectbox("Team", team_opts_h, key='hist_team_f')
+
+        filtered_hist = hist_players.copy()
+        if pos_f_h  != 'All': filtered_hist = filtered_hist[filtered_hist['position'] == pos_f_h]
+        if team_f_h != 'All': filtered_hist = filtered_hist[filtered_hist['team']     == team_f_h]
+
+        if filtered_hist.empty:
+            st.info("No players match the selected filters.")
+            st.stop()
+
         hist_players['label'] = (hist_players['name'] + '  ·  '
                                  + hist_players['team'] + '  ·  '
                                  + hist_players['position'])
+        filtered_hist['label'] = (filtered_hist['name'] + '  ·  '
+                                  + filtered_hist['team'] + '  ·  '
+                                  + filtered_hist['position'])
 
-        selected_label = st.selectbox("Search player", hist_players['label'].tolist(),
+        selected_label = st.selectbox("Player", filtered_hist['label'].tolist(),
                                       key="hist_player_select")
         hp = hist_players[hist_players['label'] == selected_label].iloc[0]
 
