@@ -1,11 +1,15 @@
 """
 FPL Analytics — player and team stats explorer, multi-season
 """
+import sys
 import sqlite3
 import pandas as pd
 import plotly.graph_objects as go
 from pathlib import Path
 import streamlit as st
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from utils.auth import require_auth, show_logout_button
 
 DB_PATH = Path(__file__).resolve().parents[2] / 'outputs' / 'projections_history.db'
 
@@ -32,6 +36,9 @@ h1, h2, h3 { font-family: 'Barlow Condensed', sans-serif !important; font-weight
 .stat-sub   { font-size: 12px; color: #666; margin-top: 2px; }
 </style>
 """, unsafe_allow_html=True)
+
+require_auth()
+show_logout_button()
 
 st.title("📊 Analytics")
 

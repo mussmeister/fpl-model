@@ -15,12 +15,18 @@ ROOT         = Path(__file__).resolve().parent.parent
 DB_PATH      = ROOT / 'outputs' / 'projections_history.db'
 FIXTURE_PATH = ROOT / 'fixtures' / 'fixtures_all.csv'
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from utils.auth import require_auth, show_logout_button
+
 BLUE_SOLID   = "#4472C4"
 ORANGE_SOLID = "#C4632A"
 ORANGE_LIGHT = "#FDDDB9"
 WHITE        = "#FFFFFF"
 
 st.set_page_config(page_title="FPL Dashboard", layout="wide", page_icon="⚽")
+
+require_auth()
+show_logout_button()
 
 # Handle card-click navigation before rendering anything
 _nav = st.query_params.get('navigate', '')

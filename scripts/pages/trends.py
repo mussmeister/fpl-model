@@ -11,6 +11,9 @@ import plotly.graph_objects as go
 from pathlib import Path
 import streamlit as st
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from utils.auth import require_auth, is_admin, show_logout_button
+
 DB_PATH      = Path(__file__).resolve().parents[2] / 'outputs' / 'projections_history.db'
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / 'fixtures' / 'fixtures_all.csv'
 
@@ -24,6 +27,10 @@ html, body, [class*="css"], .stApp, .stMarkdown, .stButton > button,
 h1, h2, h3 { font-family: 'Barlow Condensed', sans-serif !important; font-weight: 800 !important; }
 </style>
 """, unsafe_allow_html=True)
+
+require_auth()
+show_logout_button()
+_admin = is_admin()
 
 st.title("📈 Projection Trends")
 
@@ -129,8 +136,8 @@ try:
         scale      = 100 if is_pct else 1
         hover_fmt  = '.1f}%' if is_pct else '.3f}'
 
-        solio1 = get_solio_history(gw, team, metric_col)
-        solio2 = get_solio_history(gw, opponent, metric_col)
+        solio1 = get_solio_history(gw, team, metric_col)     if _admin else pd.DataFrame(columns=['timestamp', 'value'])
+        solio2 = get_solio_history(gw, opponent, metric_col) if _admin else pd.DataFrame(columns=['timestamp', 'value'])
 
         TEAM_COLOR     = '#2563EB'
         OPP_COLOR      = '#DC2626'
@@ -155,7 +162,7 @@ try:
                 hovertemplate='<b>' + opponent + '</b><br>%{x|%Y-%m-%d %H:%M}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
             ))
 
-        if len(solio1) > 0:
+        if _admin and len(solio1) > 0:
             fig.add_trace(go.Scatter(
                 x=solio1['timestamp'], y=solio1['value'] * scale,
                 name=f'{team} (Solio)', mode='lines',
@@ -163,7 +170,7 @@ try:
                 hovertemplate='<b>' + team + ' (Solio)</b><br>%{x|%Y-%m-%d %H:%M}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
             ))
 
-        if len(solio2) > 0:
+        if _admin and len(solio2) > 0:
             fig.add_trace(go.Scatter(
                 x=solio2['timestamp'], y=solio2['value'] * scale,
                 name=f'{opponent} (Solio)', mode='lines',
@@ -175,9 +182,10 @@ try:
         for df_src, col in [(hist1, metric_col), (hist2, metric_col)]:
             if len(df_src) > 0:
                 all_y_vals.extend((df_src[col] * scale).dropna().tolist())
-        for df_src in [solio1, solio2]:
-            if len(df_src) > 0:
-                all_y_vals.extend((df_src['value'] * scale).dropna().tolist())
+        if _admin:
+            for df_src in [solio1, solio2]:
+                if len(df_src) > 0:
+                    all_y_vals.extend((df_src['value'] * scale).dropna().tolist())
         y_max = math.ceil(max(all_y_vals)) if all_y_vals else (100 if is_pct else 1)
 
         fig.update_layout(
@@ -202,31 +210,29 @@ try:
             if len(hist1) > 0:
                 current_val = hist1.iloc[-1][metric_col]
                 last_time   = hist1.iloc[-1]['timestamp']
-                solio_val   = solio1.iloc[-1]['value'] if len(solio1) > 0 else None
-                sub_cols    = st.columns(2)
+                solio_val   = solio1.iloc[-1]['value'] if (_admin and len(solio1) > 0) else None
+                sub_cols    = st.columns(2) if _admin else [st.container()]
                 with sub_cols[0]:
                     st.metric(f"{team} (Model)", fmt(current_val, is_pct),
                               help=f"Last update: {last_time.strftime('%Y-%m-%d %H:%M')}")
-                with sub_cols[1]:
-                    if solio_val is not None:
-                        st.metric(f"{team} (Solio)", fmt(solio_val, is_pct))
-                    else:
-                        st.metric(f"{team} (Solio)", "—")
+                if _admin:
+                    with sub_cols[1]:
+                        st.metric(f"{team} (Solio)",
+                                  fmt(solio_val, is_pct) if solio_val is not None else "—")
 
         with col_b:
             if len(hist2) > 0:
                 current_val = hist2.iloc[-1][metric_col]
                 last_time   = hist2.iloc[-1]['timestamp']
-                solio_val   = solio2.iloc[-1]['value'] if len(solio2) > 0 else None
-                sub_cols    = st.columns(2)
+                solio_val   = solio2.iloc[-1]['value'] if (_admin and len(solio2) > 0) else None
+                sub_cols    = st.columns(2) if _admin else [st.container()]
                 with sub_cols[0]:
                     st.metric(f"{opponent} (Model)", fmt(current_val, is_pct),
                               help=f"Last update: {last_time.strftime('%Y-%m-%d %H:%M')}")
-                with sub_cols[1]:
-                    if solio_val is not None:
-                        st.metric(f"{opponent} (Solio)", fmt(solio_val, is_pct))
-                    else:
-                        st.metric(f"{opponent} (Solio)", "—")
+                if _admin:
+                    with sub_cols[1]:
+                        st.metric(f"{opponent} (Solio)",
+                                  fmt(solio_val, is_pct) if solio_val is not None else "—")
 
         st.markdown("---")
         st.subheader("Data Table")

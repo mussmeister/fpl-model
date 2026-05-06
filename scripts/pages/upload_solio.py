@@ -1,7 +1,6 @@
 """
-Upload Solio CSV files via the web interface.
+Upload Solio CSV files via the web interface. Admin only.
 """
-import os
 import sys
 import sqlite3
 import shutil
@@ -13,6 +12,7 @@ import streamlit as st
 DB_PATH = Path(__file__).resolve().parents[2] / 'outputs' / 'projections_history.db'
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ingest_solio import ensure_table, ingest_file
+from utils.auth import require_auth, is_admin, show_logout_button
 
 st.markdown("""
 <style>
@@ -25,25 +25,20 @@ h1, h2, h3 { font-family: 'Barlow Condensed', sans-serif !important; font-weight
 </style>
 """, unsafe_allow_html=True)
 
+require_auth()
+show_logout_button()
+
+if not is_admin():
+    st.error("🔒 This page is restricted to admins.")
+    if st.button("← Back to Fixtures"):
+        st.switch_page("fpl_app.py")
+    st.stop()
+
 st.title("📤 Upload Solio File")
 
 if st.button("← Back to Fixtures"):
     st.switch_page("fpl_app.py")
 
-st.markdown("---")
-
-# Simple password gate — set UPLOAD_PASSWORD env var on the server to override
-_pwd = os.environ.get("UPLOAD_PASSWORD", "fpl2025")
-entered = st.text_input("Password", type="password", placeholder="Enter upload password")
-
-if not entered:
-    st.stop()
-
-if entered != _pwd:
-    st.error("Incorrect password")
-    st.stop()
-
-st.success("Authenticated")
 st.markdown("---")
 
 uploaded = st.file_uploader(
