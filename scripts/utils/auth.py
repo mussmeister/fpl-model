@@ -19,6 +19,13 @@ Usage in every page (after set_page_config if present):
 
     user = require_auth()   # stops page if not authenticated
     show_logout_button()    # adds user name + logout to sidebar
+
+Cookie controller design note:
+    CookieController must be instantiated EXACTLY ONCE per Streamlit render —
+    calling it twice with the same key raises DuplicateWidgetID. The single
+    instance is created in require_auth() and threaded through every helper.
+    show_logout_button() defers cookie deletion via _pending_cookie_delete so
+    require_auth() can do it on the following render with its own instance.
 """
 import base64
 import hashlib
@@ -84,7 +91,7 @@ def _verify_token(token, secret, max_age_days=30):
 
 
 def _cc():
-    """Return a CookieController instance (or None if package not installed)."""
+    """Create and return a CookieController. Call only ONCE per render (in require_auth)."""
     if not _COOKIES:
         return None
     return _CC(key='_fpl_auth_cc')
@@ -112,24 +119,20 @@ def _get_user():
     }
 
 
-def _write_cookie(config, username, role, name, email, cc=None):
+def _write_cookie(config, username, role, name, email, cc):
     secret = config.get('cookie', {}).get('key', 'default')
-    if cc is None:
-        cc = _cc()
     if cc is not None:
         token = _make_token(username, role, name, email, secret)
         cc.set(_AUTH_COOKIE, token)
 
 
-def _delete_cookie():
-    cc = _cc()
+def _delete_cookie(cc):
     if cc is not None:
         cc.remove(_AUTH_COOKIE)
 
 
-def _read_cookie(config):
+def _read_cookie(config, cc):
     """Return session dict from cookie, or None."""
-    cc = _cc()
     if cc is None:
         return None
     token = cc.get(_AUTH_COOKIE)
@@ -152,7 +155,10 @@ def show_logout_button():
         role = st.session_state.get('auth_role', 'member')
         st.caption(f"👤 **{name}** · {role.title()}")
         if st.button("Logout", key="_sidebar_logout"):
-            _delete_cookie()
+            # Don't call _delete_cookie here — that would create a second
+            # CookieController instance in the same render (DuplicateWidgetID).
+            # Instead, flag it so require_auth() deletes it on the next render.
+            st.session_state['_pending_cookie_delete'] = True
             for k in _OUR_KEYS:
                 st.session_state.pop(k, None)
             st.session_state['_auth_logged_out'] = True
@@ -232,7 +238,7 @@ def _role_for_email(config, email):
 
 # ── Login UI ──────────────────────────────────────────────────────────────────
 
-def _render_login(config, cc=None):
+def _render_login(config, cc):
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Barlow:wght@400;500&display=swap');
@@ -269,7 +275,7 @@ def _render_login(config, cc=None):
                 result = _check_credentials(config, username, password)
                 if result:
                     name, role, email = result
-                    _write_cookie(config, username, role, name, email, cc=cc)
+                    _write_cookie(config, username, role, name, email, cc)
                     _set_session(name, email, username, role)
                     st.rerun()
                 else:
@@ -289,7 +295,13 @@ def require_auth():
     """
     config = _load_config()
 
+    # Single CookieController for this entire render — passed to every helper
+    # so no other code path calls _cc() and creates a duplicate widget.
     cc = _cc()
+
+    # ── Deferred cookie deletion (from logout button) ─────────────────────────
+    if st.session_state.pop('_pending_cookie_delete', False):
+        _delete_cookie(cc)
 
     # ── Google OAuth callback ─────────────────────────────────────────────────
     if 'code' in st.query_params:
@@ -300,7 +312,7 @@ def require_auth():
             email, name = result
             role = _role_for_email(config, email)
             if role:
-                _write_cookie(config, '', role, name, email, cc=cc)
+                _write_cookie(config, '', role, name, email, cc)
                 _set_session(name, email, '', role)
                 st.rerun()
             else:
@@ -316,20 +328,20 @@ def require_auth():
         return _get_user()
 
     # ── Wait one render for the cookie controller to load ─────────────────────
-    # On the very first render the component hasn't sent its value yet.
-    # _cc_ready is set once and never cleared, so subsequent renders (including
-    # form submissions) fall straight through to the cookie check / login UI.
+    # On the very first render the component hasn't returned its value yet.
+    # _cc_ready is set once and never cleared, so form submissions and all
+    # subsequent renders fall straight through without being blocked again.
     if cc is not None and not st.session_state.get('_cc_ready'):
         st.session_state['_cc_ready'] = True
         st.stop()
 
     # ── Restore from cookie (new tab / page refresh) ──────────────────────────
     if not st.session_state.get('_auth_logged_out'):
-        p = _read_cookie(config)
+        p = _read_cookie(config, cc)
         if p:
             _set_session(p['n'], p['e'], p['u'], p['r'])
             return _get_user()
 
     # ── Show login UI ─────────────────────────────────────────────────────────
-    _render_login(config, cc=cc)
+    _render_login(config, cc)
     st.stop()
