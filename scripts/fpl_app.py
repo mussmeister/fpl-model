@@ -5,7 +5,6 @@ Run:  streamlit run scripts/fpl_app.py
 import math
 import sys
 import sqlite3
-import urllib.parse
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
@@ -27,18 +26,6 @@ st.set_page_config(page_title="FPL Dashboard", layout="wide", page_icon="⚽")
 
 require_auth()
 show_logout_button()
-
-# Handle card-click navigation before rendering anything
-_nav = st.query_params.get('navigate', '')
-if _nav:
-    try:
-        _home, _away, _gw = urllib.parse.unquote(_nav).split('|')
-        st.session_state['pre_gw']   = int(_gw)
-        st.session_state['pre_team'] = _home
-    except Exception:
-        pass
-    st.query_params.clear()
-    st.switch_page("pages/trends.py")
 
 st.markdown("""
 <style>
@@ -130,7 +117,7 @@ def cs_td(val, higher):
                 f'border-radius:5px;text-align:center;min-width:58px;{NUM_FONT}">{s}</td>')
     return f'<td style="padding:5px 10px;text-align:center;color:#333;min-width:58px;{NUM_FONT}">{s}</td>'
 
-def fixture_html(home, away, kickoff, hp, ap, abbr_map, show_header, nav_key=""):
+def fixture_html(home, away, kickoff, hp, ap, abbr_map, show_header):
     day_str  = kickoff.strftime('%a')
     date_str = kickoff.strftime('%d/%m')
     hg  = hp.get('g');  ag  = ap.get('g')
@@ -161,13 +148,9 @@ def fixture_html(home, away, kickoff, hp, ap, abbr_map, show_header, nav_key="")
             '</tr>'
         )
 
-    href = f'?navigate={urllib.parse.quote(nav_key)}' if nav_key else '#'
     return f"""
-<a href="{href}" target="_self" style="text-decoration:none;color:inherit;display:block;margin:4px 0 0 0;">
 <div style="border:1px solid #ddd;border-radius:10px;padding:10px 14px;
-            background:#fff;{CARD_FONT}cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;"
-     onmouseover="this.style.borderColor='#999';this.style.boxShadow='0 3px 10px rgba(0,0,0,0.1)'"
-     onmouseout="this.style.borderColor='#ddd';this.style.boxShadow='none'">
+            background:#fff;{CARD_FONT}margin:4px 0 0 0;">
   <table style="width:100%;border-collapse:collapse;">{hdr}
     <tr>
       <td rowspan="2" style="{DATE_STYLE}">{day_str}<br/>{date_str}</td>
@@ -179,8 +162,7 @@ def fixture_html(home, away, kickoff, hp, ap, abbr_map, show_header, nav_key="")
       {goals_td(ag, ag_hi)}{cs_td(acs, acs_hi)}
     </tr>
   </table>
-</div>
-</a>"""
+</div>"""
 
 # ── Main UI ───────────────────────────────────────────────────────────────────
 
@@ -235,7 +217,13 @@ for col, grp in [(col_l, gw_fix.iloc[:mid]), (col_r, gw_fix.iloc[mid:])]:
                 home, away, row['Kickoff_Date'],
                 projs.get(home, {}), projs.get(away, {}),
                 abbr_map, show_header=(i == 0),
-                nav_key=f"{home}|{away}|{selected_gw}"
             )
             st.markdown(html, unsafe_allow_html=True)
-            st.markdown('<div style="margin-bottom:8px;"></div>', unsafe_allow_html=True)
+            if st.button(
+                "📈 Trends", key=f"nav_{home}_{away}_{selected_gw}",
+                use_container_width=True,
+            ):
+                st.session_state['pre_gw']   = selected_gw
+                st.session_state['pre_team'] = home
+                st.switch_page("pages/trends.py")
+            st.markdown('<div style="margin-bottom:4px;"></div>', unsafe_allow_html=True)
