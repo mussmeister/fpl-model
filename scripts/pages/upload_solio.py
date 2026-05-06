@@ -34,10 +34,15 @@ if not is_admin():
         st.switch_page("fpl_app.py")
     st.stop()
 
-st.title("📤 Upload Solio File")
+st.title("📤 Upload Solio Fixture Data")
 
-if st.button("← Back to Fixtures"):
-    st.switch_page("fpl_app.py")
+col_back, col_player = st.columns([1, 2])
+with col_back:
+    if st.button("← Back to Fixtures"):
+        st.switch_page("fpl_app.py")
+with col_player:
+    if st.button("📤 Player Projections Upload", use_container_width=True):
+        st.switch_page("pages/upload_player_projections.py")
 
 st.markdown("---")
 
