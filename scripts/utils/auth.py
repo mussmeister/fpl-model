@@ -233,6 +233,8 @@ def _role_for_email(config, email):
         return 'admin'
     if el in [e.lower() for e in config.get('member_emails', [])]:
         return 'member'
+    if config.get('allow_google_registration', False):
+        return 'member'
     return None
 
 
