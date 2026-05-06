@@ -38,6 +38,20 @@ st.title("🔴 Live Gameweek")
 if 'fpl_id' not in st.session_state:
     st.session_state.fpl_id = None
 
+# Pre-populate from user profile if not already set
+if not st.session_state.fpl_id:
+    try:
+        from utils import user_db
+        _email = st.session_state.get('auth_email', '')
+        if _email:
+            _profile = user_db.get_profile(_email)
+            _stored_id = _profile.get('fpl_team_id')
+            if _stored_id:
+                st.session_state.fpl_id = str(_stored_id)
+                st.session_state['_fpl_id_from_profile'] = True
+    except Exception:
+        pass
+
 if not st.session_state.fpl_id:
     st.markdown("### Enter your FPL Manager ID")
     st.markdown("Find it in your FPL URL: `fantasy.premierleague.com/entry/`**123456**`/history`")
@@ -57,10 +71,22 @@ if not st.session_state.fpl_id:
 fpl_id = st.session_state.fpl_id
 
 with st.sidebar:
-    st.markdown(f"**FPL ID:** `{fpl_id}`")
-    if st.button("Change ID"):
-        st.session_state.fpl_id = None
-        st.rerun()
+    if st.session_state.get('_fpl_id_from_profile'):
+        try:
+            from utils import user_db as _udb
+            _pname = _udb.get_profile(st.session_state.get('auth_email', '')).get('fpl_team_name', '')
+            st.caption(f"**{_pname or 'FPL ID'}** `{fpl_id}`")
+        except Exception:
+            st.markdown(f"**FPL ID:** `{fpl_id}`")
+        if st.button("Change ID"):
+            st.session_state.fpl_id = None
+            st.session_state.pop('_fpl_id_from_profile', None)
+            st.rerun()
+    else:
+        st.markdown(f"**FPL ID:** `{fpl_id}`")
+        if st.button("Change ID"):
+            st.session_state.fpl_id = None
+            st.rerun()
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
