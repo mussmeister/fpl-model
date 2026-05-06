@@ -128,7 +128,10 @@ def _write_cookie(config, username, role, name, email, cc):
 
 def _delete_cookie(cc):
     if cc is not None:
-        cc.remove(_AUTH_COOKIE)
+        try:
+            cc.remove(_AUTH_COOKIE)
+        except Exception:
+            pass
 
 
 def _read_cookie(config, cc):
