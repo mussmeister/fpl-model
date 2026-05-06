@@ -152,16 +152,17 @@ def is_admin():
 
 
 def show_logout_button():
-    """Render user badge + logout button in the sidebar. Call after require_auth()."""
+    """Render user badge, nav links, and logout button in the sidebar."""
     with st.sidebar:
         name = st.session_state.get('auth_name', '')
         role = st.session_state.get('auth_role', 'member')
         st.caption(f"👤 **{name}** · {role.title()}")
+        st.page_link("pages/profile.py", label="👤 Profile", use_container_width=True)
+        if role == 'admin':
+            st.page_link("pages/admin_users.py", label="👥 Users", use_container_width=True)
         if st.button("Logout", key="_sidebar_logout"):
-            # Don't call _delete_cookie here — that would create a second
-            # CookieController instance in the same render (DuplicateWidgetID).
-            # Instead, flag it so require_auth() deletes it on the next render.
             st.session_state['_pending_cookie_delete'] = True
+            st.session_state.pop('_session_init', None)
             for k in _OUR_KEYS:
                 st.session_state.pop(k, None)
             st.session_state['_auth_logged_out'] = True
@@ -229,11 +230,21 @@ def _exchange_google_code(config, code):
 
 def _role_for_email(config, email):
     el = email.lower()
+    # Credentials in auth.yaml take highest precedence (password users)
     for ud in config.get('credentials', {}).get('usernames', {}).values():
         if ud.get('email', '').lower() == el:
             return ud.get('role', 'member')
+    # admin_emails in auth.yaml always grants admin (cannot be overridden)
     if el in [e.lower() for e in config.get('admin_emails', [])]:
         return 'admin'
+    # DB-stored role (set via admin Users page) takes precedence over member_emails
+    try:
+        from utils.user_db import get_db_role
+        db_role = get_db_role(el)
+        if db_role:
+            return db_role
+    except Exception:
+        pass
     if el in [e.lower() for e in config.get('member_emails', [])]:
         return 'member'
     if config.get('allow_google_registration', False):
@@ -290,6 +301,29 @@ def _render_login(config, cc):
             st.error("No authentication methods configured — check `config/auth.yaml`.")
 
 
+# ── Post-auth hook ────────────────────────────────────────────────────────────
+
+def _authenticated_return(cc):
+    """Called whenever auth succeeds. Runs once-per-session: disabled check + login record."""
+    if not st.session_state.get('_session_init'):
+        st.session_state['_session_init'] = True
+        user = _get_user()
+        try:
+            from utils.user_db import upsert_login, is_disabled
+            if is_disabled(user['email']):
+                for k in _OUR_KEYS:
+                    st.session_state.pop(k, None)
+                st.session_state.pop('_session_init', None)
+                _delete_cookie(cc)
+                st.session_state['_auth_logged_out'] = True
+                st.error("🔒 Your account has been disabled. Contact the admin.")
+                st.stop()
+            upsert_login(user['email'], user['name'], user['username'], user['role'])
+        except Exception:
+            pass
+    return _get_user()
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def require_auth():
@@ -330,7 +364,7 @@ def require_auth():
 
     # ── Already authenticated this session ────────────────────────────────────
     if st.session_state.get('auth_status'):
-        return _get_user()
+        return _authenticated_return(cc)
 
     # ── Wait one render for the cookie controller to load ─────────────────────
     # On the very first render the component hasn't returned its value yet.
@@ -345,7 +379,7 @@ def require_auth():
         p = _read_cookie(config, cc)
         if p:
             _set_session(p['n'], p['e'], p['u'], p['r'])
-            return _get_user()
+            return _authenticated_return(cc)
 
     # ── Show login UI ─────────────────────────────────────────────────────────
     _render_login(config, cc)
