@@ -191,6 +191,24 @@ def ingest_file(conn, path: Path, ingested_at: str, force: bool = False) -> int:
     return len(rows)
 
 
+def _file_timestamp(path: Path) -> str:
+    """Return a sensible creation timestamp for a file.
+
+    FPLReview filenames embed a Unix timestamp (fplreview_1772201674.csv).
+    Use that so backfills on a new server aren't all stamped with today.
+    Fall back to file mtime for everything else.
+    """
+    stem = path.stem
+    if stem.startswith('fplreview_'):
+        ts_part = stem.split('_', 1)[1]
+        if ts_part.isdigit():
+            try:
+                return datetime.fromtimestamp(int(ts_part)).strftime('%Y-%m-%d %H:%M:%S')
+            except (OSError, OverflowError):
+                pass
+    return datetime.fromtimestamp(path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+
+
 def main():
     parser = argparse.ArgumentParser(description="Ingest player projection CSVs into SQLite")
     parser.add_argument('file', nargs='?', help='Path to a CSV file')
@@ -216,7 +234,7 @@ def main():
             print(f"Backfilling {len(files)} files...")
             total = 0
             for path in files:
-                mtime = datetime.fromtimestamp(path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+                mtime = _file_timestamp(path)
                 total += ingest_file(conn, path, mtime, force=args.force)
             print(f"\nDone. {total} total rows ingested.")
         else:
