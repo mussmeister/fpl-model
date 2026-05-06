@@ -112,9 +112,10 @@ def _get_user():
     }
 
 
-def _write_cookie(config, username, role, name, email):
+def _write_cookie(config, username, role, name, email, cc=None):
     secret = config.get('cookie', {}).get('key', 'default')
-    cc = _cc()
+    if cc is None:
+        cc = _cc()
     if cc is not None:
         token = _make_token(username, role, name, email, secret)
         cc.set(_AUTH_COOKIE, token)
@@ -231,7 +232,7 @@ def _role_for_email(config, email):
 
 # ── Login UI ──────────────────────────────────────────────────────────────────
 
-def _render_login(config):
+def _render_login(config, cc=None):
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Barlow:wght@400;500&display=swap');
@@ -268,7 +269,7 @@ def _render_login(config):
                 result = _check_credentials(config, username, password)
                 if result:
                     name, role, email = result
-                    _write_cookie(config, username, role, name, email)
+                    _write_cookie(config, username, role, name, email, cc=cc)
                     _set_session(name, email, username, role)
                     st.rerun()
                 else:
@@ -288,7 +289,6 @@ def require_auth():
     """
     config = _load_config()
 
-    # Cookie controller must be initialised early so it can respond before st.stop()
     cc = _cc()
 
     # ── Google OAuth callback ─────────────────────────────────────────────────
@@ -300,7 +300,7 @@ def require_auth():
             email, name = result
             role = _role_for_email(config, email)
             if role:
-                _write_cookie(config, '', role, name, email)
+                _write_cookie(config, '', role, name, email, cc=cc)
                 _set_session(name, email, '', role)
                 st.rerun()
             else:
@@ -315,9 +315,15 @@ def require_auth():
     if st.session_state.get('auth_status'):
         return _get_user()
 
+    # ── Wait one render for the cookie controller to load ─────────────────────
+    # On the very first render the component hasn't sent its value yet.
+    # _cc_ready is set once and never cleared, so subsequent renders (including
+    # form submissions) fall straight through to the cookie check / login UI.
+    if cc is not None and not st.session_state.get('_cc_ready'):
+        st.session_state['_cc_ready'] = True
+        st.stop()
+
     # ── Restore from cookie (new tab / page refresh) ──────────────────────────
-    # The cookie component may return None on the very first render while it
-    # loads — if so, it will trigger an automatic rerun once it has the value.
     if not st.session_state.get('_auth_logged_out'):
         p = _read_cookie(config)
         if p:
@@ -325,5 +331,5 @@ def require_auth():
             return _get_user()
 
     # ── Show login UI ─────────────────────────────────────────────────────────
-    _render_login(config)
+    _render_login(config, cc=cc)
     st.stop()
