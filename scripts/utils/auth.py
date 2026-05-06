@@ -3,7 +3,7 @@ FPL Dashboard authentication.
 
 Two sign-in methods:
   1. Google OAuth2 (preferred) — requires HTTPS + Google Cloud Console credentials
-  2. Username / password form via streamlit-authenticator
+  2. Username / password form — checked directly against config/auth.yaml via bcrypt
 
 Roles: 'admin' — full access including Solio data and upload page
        'member' — all read pages, no Solio comparison, no upload
@@ -19,16 +19,11 @@ Usage in every page (after set_page_config if present):
 """
 import urllib.parse
 import yaml
+import bcrypt
 import requests
 import streamlit as st
 from pathlib import Path
 from yaml.loader import SafeLoader
-
-try:
-    import streamlit_authenticator as stauth
-    _STAUTH = True
-except ImportError:
-    _STAUTH = False
 
 ROOT        = Path(__file__).resolve().parents[2]
 CONFIG_PATH = ROOT / 'config' / 'auth.yaml'
@@ -37,8 +32,7 @@ _GOOGLE_AUTH  = 'https://accounts.google.com/o/oauth2/v2/auth'
 _GOOGLE_TOKEN = 'https://oauth2.googleapis.com/token'
 _GOOGLE_INFO  = 'https://www.googleapis.com/oauth2/v2/userinfo'
 
-_OUR_KEYS   = ('auth_status', 'auth_name', 'auth_email', 'auth_username', 'auth_role')
-_STAUTH_KEYS = ('authentication_status', 'name', 'username', 'logout')
+_OUR_KEYS = ('auth_status', 'auth_name', 'auth_email', 'auth_username', 'auth_role')
 
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -64,7 +58,7 @@ def _set_session(name, email, username, role):
 
 
 def _clear_session():
-    for k in _OUR_KEYS + _STAUTH_KEYS:
+    for k in _OUR_KEYS:
         st.session_state.pop(k, None)
     st.session_state['_auth_logged_out'] = True
 
@@ -97,6 +91,24 @@ def show_logout_button():
         st.divider()
 
 
+# ── Form login (bcrypt, no stauth dependency) ─────────────────────────────────
+
+def _check_credentials(config, username, password):
+    """Returns (name, role, email) if valid, else None."""
+    ud = config.get('credentials', {}).get('usernames', {}).get(username)
+    if not ud:
+        return None
+    stored = ud.get('password', '')
+    if not stored:
+        return None
+    try:
+        if bcrypt.checkpw(password.encode(), stored.encode()):
+            return ud.get('name', username), ud.get('role', 'member'), ud.get('email', '')
+    except Exception:
+        pass
+    return None
+
+
 # ── Google OAuth ──────────────────────────────────────────────────────────────
 
 def _google_auth_url(config):
@@ -117,7 +129,7 @@ def _google_auth_url(config):
 
 
 def _exchange_google_code(config, code):
-    """Exchange OAuth code → user (email, name). Returns None on failure."""
+    """Exchange OAuth code → (email, name). Returns None on failure."""
     oauth = config.get('oauth2', {}).get('google', {})
     try:
         tok = requests.post(_GOOGLE_TOKEN, data={
@@ -156,7 +168,7 @@ def _role_for_email(config, email):
 # ── Login UI ──────────────────────────────────────────────────────────────────
 
 def _render_login(config):
-    """Full login page — Google button + password form fallback."""
+    """Full login page — Google button + username/password form fallback."""
     st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Barlow:wght@400;500&display=swap');
@@ -164,7 +176,6 @@ def _render_login(config):
     .login-title { font-family:'Barlow Condensed',sans-serif; font-size:34px; font-weight:800;
                    text-align:center; margin-bottom:4px; }
     .login-sub   { text-align:center; color:#888; font-size:13px; margin-bottom:24px; }
-    .or-divider  { text-align:center; color:#bbb; font-size:12px; margin:12px 0; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -174,54 +185,35 @@ def _render_login(config):
         st.markdown('<div class="login-sub">Sign in to continue</div>', unsafe_allow_html=True)
 
         google_url = _google_auth_url(config)
-        has_google = bool(google_url)
-        has_users  = bool(config.get('credentials', {}).get('usernames'))
-
-        if has_google:
+        if google_url:
             st.link_button(
                 "Sign in with Google",
                 google_url,
                 use_container_width=True,
                 type="primary",
             )
+            st.markdown('<p style="text-align:center;color:#bbb;margin:10px 0;">── or ──</p>',
+                        unsafe_allow_html=True)
 
-        if has_google and has_users and _STAUTH:
-            st.markdown('<div class="or-divider">── or ──</div>', unsafe_allow_html=True)
+        has_users = bool(config.get('credentials', {}).get('usernames'))
+        if has_users:
+            with st.form("_login_form"):
+                username  = st.text_input("Username")
+                password  = st.text_input("Password", type="password")
+                submitted = st.form_submit_button("Sign In", use_container_width=True,
+                                                  type="primary" if not google_url else "secondary")
 
-        if has_users and _STAUTH:
-            authenticator = stauth.Authenticate(
-                config['credentials'],
-                config['cookie']['name'],
-                config['cookie']['key'],
-                int(config['cookie'].get('expiry_days', 30)),
-            )
-            # Handle both stauth 0.3.x (returns tuple) and 0.4.x (session state only)
-            try:
-                result = authenticator.login()
-                if isinstance(result, tuple) and len(result) == 3:
-                    name, status, username = result
+            if submitted:
+                result = _check_credentials(config, username, password)
+                if result:
+                    name, role, email = result
+                    _set_session(name, email, username, role)
+                    st.rerun()
                 else:
-                    status   = st.session_state.get('authentication_status')
-                    name     = st.session_state.get('name', '')
-                    username = st.session_state.get('username', '')
-            except Exception:
-                status   = st.session_state.get('authentication_status')
-                name     = st.session_state.get('name', '')
-                username = st.session_state.get('username', '')
+                    st.error("Incorrect username or password")
 
-            if status is True:
-                ud    = config['credentials']['usernames'].get(username, {})
-                _set_session(name, ud.get('email', ''), username, ud.get('role', 'member'))
-                st.rerun()
-            elif status is False:
-                pass  # stauth renders its own error message
-
-        elif has_users and not _STAUTH:
-            st.warning("Install `streamlit-authenticator` to enable password login:  \n"
-                       "`pip install streamlit-authenticator`")
-
-        if not has_google and not has_users:
-            st.error("No authentication methods configured. Check `config/auth.yaml`.")
+        if not google_url and not has_users:
+            st.error("No authentication methods configured — check `config/auth.yaml`.")
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -257,17 +249,6 @@ def require_auth():
 
     # ── Already authenticated this session ────────────────────────────────────
     if st.session_state.get('auth_status'):
-        return _get_user()
-
-    # ── Restore from stauth cookie (page refresh, not after explicit logout) ──
-    if (not st.session_state.get('_auth_logged_out')
-            and st.session_state.get('authentication_status') is True):
-        username = st.session_state.get('username', '')
-        name     = st.session_state.get('name', '')
-        ud       = (config.get('credentials', {})
-                         .get('usernames', {})
-                         .get(username, {}))
-        _set_session(name, ud.get('email', ''), username, ud.get('role', 'member'))
         return _get_user()
 
     # ── Show login UI ─────────────────────────────────────────────────────────
