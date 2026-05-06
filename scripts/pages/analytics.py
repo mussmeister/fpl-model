@@ -100,17 +100,32 @@ def load_vaastav_players(season):
 def load_current_player_gw(element_id):
     try:
         with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
-            return pd.read_sql("""
-                SELECT s.gw, s.minutes, s.goals_scored, s.assists, s.clean_sheets,
-                       s.goals_conceded, s.bonus, s.bps, s.total_points,
-                       s.was_home, s.team_h_score, s.team_a_score,
-                       s.expected_goals, s.expected_assists,
-                       s.expected_goal_involvements, s.expected_goals_conceded,
-                       s.value
-                FROM fpl_player_gw_stats s
-                WHERE s.element_id = ?
-                ORDER BY s.gw
-            """, conn, params=(int(element_id),))
+            try:
+                return pd.read_sql("""
+                    SELECT s.gw, s.minutes, s.goals_scored, s.assists, s.clean_sheets,
+                           s.goals_conceded, s.bonus, s.bps, s.total_points,
+                           s.was_home, s.team_h_score, s.team_a_score,
+                           s.expected_goals, s.expected_assists,
+                           s.expected_goal_involvements, s.expected_goals_conceded,
+                           s.value,
+                           COALESCE(ot.short_name, '') AS opponent
+                    FROM fpl_player_gw_stats s
+                    LEFT JOIN fpl_teams ot ON s.opponent_team = ot.team_id
+                    WHERE s.element_id = ?
+                    ORDER BY s.gw
+                """, conn, params=(int(element_id),))
+            except Exception:
+                return pd.read_sql("""
+                    SELECT s.gw, s.minutes, s.goals_scored, s.assists, s.clean_sheets,
+                           s.goals_conceded, s.bonus, s.bps, s.total_points,
+                           s.was_home, s.team_h_score, s.team_a_score,
+                           s.expected_goals, s.expected_assists,
+                           s.expected_goal_involvements, s.expected_goals_conceded,
+                           s.value
+                    FROM fpl_player_gw_stats s
+                    WHERE s.element_id = ?
+                    ORDER BY s.gw
+                """, conn, params=(int(element_id),))
     except Exception:
         return pd.DataFrame()
 
@@ -129,6 +144,31 @@ def load_vaastav_player_gw(name, team, season):
                 WHERE season = ? AND name = ? AND team = ?
                 ORDER BY gw
             """, conn, params=(season, name, team))
+    except Exception:
+        return pd.DataFrame()
+
+@st.cache_data(ttl=300)
+def load_player_projections_gw(name, team):
+    """Latest Solio + FPLReview projection per GW — merged into one row per GW."""
+    try:
+        with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
+            return pd.read_sql("""
+                SELECT gw,
+                       MAX(CASE WHEN source='solio'     THEN xmins END) AS sol_xmins,
+                       MAX(CASE WHEN source='solio'     THEN pts   END) AS sol_pts,
+                       MAX(CASE WHEN source='fplreview' THEN xmins END) AS fpl_xmins,
+                       MAX(CASE WHEN source='fplreview' THEN pts   END) AS fpl_pts
+                FROM player_projection_snapshots
+                WHERE name = ? AND team = ?
+                  AND ingested_at IN (
+                      SELECT MAX(ingested_at)
+                      FROM player_projection_snapshots
+                      WHERE name = ? AND team = ?
+                      GROUP BY source
+                  )
+                GROUP BY gw
+                ORDER BY gw
+            """, conn, params=(name, team, name, team))
     except Exception:
         return pd.DataFrame()
 
@@ -448,32 +488,52 @@ def player_stat_cards(gw_df, season_label):
         cx2.markdown(stat_card("xA",  f"{xa:.2f}" if xa is not None else "—", f"Actual: {ast}"), unsafe_allow_html=True)
         cx3.markdown(stat_card("xGI", f"{xgi:.2f}" if xgi is not None else "—", ""), unsafe_allow_html=True)
 
-def gw_tables(gw_df):
-    cols = ['gw', 'minutes', 'total_points', 'goals_scored', 'assists',
-            'clean_sheets', 'bonus', 'bps', 'expected_goals', 'expected_assists',
-            'team_h_score', 'team_a_score']
-    present = [c for c in cols if c in gw_df.columns]
-    rename  = {
-        'gw': 'GW', 'minutes': 'Mins', 'total_points': 'Pts',
-        'goals_scored': 'G', 'assists': 'A', 'clean_sheets': 'CS',
-        'bonus': 'Bonus', 'bps': 'BPS',
-        'expected_goals': 'xG', 'expected_assists': 'xA',
-        'team_h_score': 'H', 'team_a_score': 'A Score'
-    }
-    show = gw_df[present].rename(columns=rename)
-    for col in ['xG', 'xA']:
+def gw_tables(gw_df, name=None, team=None):
+    df = gw_df.copy()
+
+    # Build score column (player's team goals first)
+    if {'team_h_score', 'team_a_score', 'was_home'}.issubset(df.columns):
+        def _score(row):
+            h, a = row.get('team_h_score'), row.get('team_a_score')
+            if pd.isna(h) or pd.isna(a):
+                return ''
+            h, a = int(h), int(a)
+            return f"{h}–{a}" if row.get('was_home') else f"{a}–{h}"
+        df['score'] = df.apply(_score, axis=1)
+
+    # Merge projection data (adds future GW rows + sol/fpl columns)
+    proj = load_player_projections_gw(name, team) if (name and team) else pd.DataFrame()
+    if not proj.empty:
+        df = df.merge(proj, on='gw', how='outer')
+
+    df = df.sort_values('gw', ascending=False)
+
+    col_order = [
+        ('gw',             'GW'),
+        ('opponent',       'Opp'),
+        ('score',          'Score'),
+        ('minutes',        'Mins'),
+        ('total_points',   'Pts'),
+        ('goals_scored',   'G'),
+        ('assists',        'A'),
+        ('clean_sheets',   'CS'),
+        ('bonus',          'Bonus'),
+        ('bps',            'BPS'),
+        ('expected_goals', 'xG'),
+        ('expected_assists','xA'),
+        ('sol_xmins',      'Sol xMins'),
+        ('sol_pts',        'Sol xPts'),
+        ('fpl_xmins',      'FPL xMins'),
+        ('fpl_pts',        'FPL xPts'),
+    ]
+    present = [(src, dst) for src, dst in col_order if src in df.columns]
+    show = df[[s for s, _ in present]].rename(columns=dict(present))
+
+    for col in ['xG', 'xA', 'Sol xMins', 'Sol xPts', 'FPL xMins', 'FPL xPts']:
         if col in show.columns:
             show[col] = pd.to_numeric(show[col], errors='coerce').round(2)
 
-    col_l5, col_full = st.columns(2)
-    with col_l5:
-        st.markdown("**Last 5 Gameweeks**")
-        st.dataframe(show.tail(5).sort_values('GW', ascending=False),
-                     use_container_width=True, hide_index=True)
-    with col_full:
-        st.markdown("**Full Season**")
-        st.dataframe(show.sort_values('GW', ascending=False),
-                     use_container_width=True, hide_index=True)
+    st.dataframe(show, use_container_width=True, hide_index=True)
 
 # ── Season selector (shared) ──────────────────────────────────────────────────
 
@@ -683,7 +743,7 @@ with tab_player:
                                    template='plotly_white', margin=dict(t=20))
                 st.plotly_chart(fig2, use_container_width=True)
 
-            gw_tables(gw_df)
+            gw_tables(gw_df, name=p['web_name'], team=p['team_name'])
 
     # ── Historical season view ─────────────────────────────────────────────
     else:
@@ -749,6 +809,7 @@ with tab_player:
             gw_tables(gw_df)
 
 # ══ Team View ═════════════════════════════════════════════════════════════════
+
 
 with tab_team:
 
