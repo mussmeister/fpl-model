@@ -124,6 +124,15 @@ with col2:
 
 st.markdown("---")
 
+def to_bst(df):
+    """Convert UTC timestamps to Europe/London local time."""
+    if df.empty: return df
+    d = df.copy()
+    d['timestamp'] = (d['timestamp'].dt.tz_localize('UTC')
+                      .dt.tz_convert('Europe/London')
+                      .dt.tz_localize(None))
+    return d
+
 try:
     hist1 = get_history(gw, team)
     hist2 = get_history(gw, opponent)
@@ -134,10 +143,16 @@ try:
         metric_col = {"Goals (G)": "g", "Clean Sheet %": "cs"}[metric]
         is_pct     = metric_col == 'cs'
         scale      = 100 if is_pct else 1
-        hover_fmt  = '.1f}%' if is_pct else '.3f}'
+        hover_fmt  = '.1f}%' if is_pct else '.2f}'
 
         solio1 = get_solio_history(gw, team, metric_col)     if _admin else pd.DataFrame(columns=['timestamp', 'value'])
         solio2 = get_solio_history(gw, opponent, metric_col) if _admin else pd.DataFrame(columns=['timestamp', 'value'])
+
+        # Convert all timestamps to local time (BST/GMT) for display
+        h1 = to_bst(hist1)
+        h2 = to_bst(hist2)
+        s1 = to_bst(solio1)
+        s2 = to_bst(solio2)
 
         TEAM_COLOR     = '#2563EB'
         OPP_COLOR      = '#DC2626'
@@ -146,51 +161,51 @@ try:
 
         fig = go.Figure()
 
-        if len(hist1) > 0:
+        if len(h1) > 0:
             fig.add_trace(go.Scatter(
-                x=hist1['timestamp'], y=hist1[metric_col] * scale,
+                x=h1['timestamp'], y=h1[metric_col] * scale,
                 name=team, mode='lines',
                 line=dict(color=TEAM_COLOR, width=3, shape='spline', smoothing=1.3),
-                hovertemplate='<b>' + team + '</b><br>%{x|%Y-%m-%d %H:%M}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
+                hovertemplate='<b>' + team + '</b><br>%{x|%d-%b-%y %H:%M:%S}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
             ))
 
-        if len(hist2) > 0:
+        if len(h2) > 0:
             fig.add_trace(go.Scatter(
-                x=hist2['timestamp'], y=hist2[metric_col] * scale,
+                x=h2['timestamp'], y=h2[metric_col] * scale,
                 name=opponent, mode='lines',
                 line=dict(color=OPP_COLOR, width=3, shape='spline', smoothing=1.3),
-                hovertemplate='<b>' + opponent + '</b><br>%{x|%Y-%m-%d %H:%M}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
+                hovertemplate='<b>' + opponent + '</b><br>%{x|%d-%b-%y %H:%M:%S}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
             ))
 
-        if _admin and len(solio1) > 0:
+        if _admin and len(s1) > 0:
             fig.add_trace(go.Scatter(
-                x=solio1['timestamp'], y=solio1['value'] * scale,
+                x=s1['timestamp'], y=s1['value'] * scale,
                 name=f'{team} (Solio)', mode='lines',
                 line=dict(color=TEAM_SOLIO, dash='dot', width=2, shape='spline', smoothing=1.3),
-                hovertemplate='<b>' + team + ' (Solio)</b><br>%{x|%Y-%m-%d %H:%M}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
+                hovertemplate='<b>' + team + ' (Solio)</b><br>%{x|%d-%b-%y %H:%M:%S}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
             ))
 
-        if _admin and len(solio2) > 0:
+        if _admin and len(s2) > 0:
             fig.add_trace(go.Scatter(
-                x=solio2['timestamp'], y=solio2['value'] * scale,
+                x=s2['timestamp'], y=s2['value'] * scale,
                 name=f'{opponent} (Solio)', mode='lines',
                 line=dict(color=OPP_SOLIO, dash='dot', width=2, shape='spline', smoothing=1.3),
-                hovertemplate='<b>' + opponent + ' (Solio)</b><br>%{x|%Y-%m-%d %H:%M}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
+                hovertemplate='<b>' + opponent + ' (Solio)</b><br>%{x|%d-%b-%y %H:%M:%S}<br>' + metric + ': %{y:' + hover_fmt + '<extra></extra>'
             ))
 
         all_y_vals = []
-        for df_src, col in [(hist1, metric_col), (hist2, metric_col)]:
+        for df_src, col in [(h1, metric_col), (h2, metric_col)]:
             if len(df_src) > 0:
                 all_y_vals.extend((df_src[col] * scale).dropna().tolist())
         if _admin:
-            for df_src in [solio1, solio2]:
+            for df_src in [s1, s2]:
                 if len(df_src) > 0:
                     all_y_vals.extend((df_src['value'] * scale).dropna().tolist())
         y_max = math.ceil(max(all_y_vals)) if all_y_vals else (100 if is_pct else 1)
 
         fig.update_layout(
             title=f"GW{gw}: {team} v {opponent} – {metric}",
-            xaxis_title="Time",
+            xaxis_title="Time (local)",
             yaxis_title=metric,
             yaxis=dict(range=[0, y_max], ticksuffix='%' if is_pct else ''),
             hovermode='x unified',
@@ -204,31 +219,31 @@ try:
         st.markdown("---")
         col_a, col_b = st.columns(2)
 
-        def fmt(val, pct): return f"{val * 100:.1f}%" if pct else f"{val:.1f}"
+        def fmt(val, pct): return f"{val * 100:.1f}%" if pct else f"{val:.2f}"
 
         with col_a:
-            if len(hist1) > 0:
-                current_val = hist1.iloc[-1][metric_col]
-                last_time   = hist1.iloc[-1]['timestamp']
-                solio_val   = solio1.iloc[-1]['value'] if (_admin and len(solio1) > 0) else None
+            if len(h1) > 0:
+                current_val = h1.iloc[-1][metric_col]
+                last_time   = h1.iloc[-1]['timestamp']
+                solio_val   = s1.iloc[-1]['value'] if (_admin and len(s1) > 0) else None
                 sub_cols    = st.columns(2) if _admin else [st.container()]
                 with sub_cols[0]:
                     st.metric(f"{team} (Model)", fmt(current_val, is_pct),
-                              help=f"Last update: {last_time.strftime('%Y-%m-%d %H:%M')}")
+                              help=f"Last update: {last_time.strftime('%d-%b-%y %H:%M:%S')}")
                 if _admin:
                     with sub_cols[1]:
                         st.metric(f"{team} (Solio)",
                                   fmt(solio_val, is_pct) if solio_val is not None else "—")
 
         with col_b:
-            if len(hist2) > 0:
-                current_val = hist2.iloc[-1][metric_col]
-                last_time   = hist2.iloc[-1]['timestamp']
-                solio_val   = solio2.iloc[-1]['value'] if (_admin and len(solio2) > 0) else None
+            if len(h2) > 0:
+                current_val = h2.iloc[-1][metric_col]
+                last_time   = h2.iloc[-1]['timestamp']
+                solio_val   = s2.iloc[-1]['value'] if (_admin and len(s2) > 0) else None
                 sub_cols    = st.columns(2) if _admin else [st.container()]
                 with sub_cols[0]:
                     st.metric(f"{opponent} (Model)", fmt(current_val, is_pct),
-                              help=f"Last update: {last_time.strftime('%Y-%m-%d %H:%M')}")
+                              help=f"Last update: {last_time.strftime('%d-%b-%y %H:%M:%S')}")
                 if _admin:
                     with sub_cols[1]:
                         st.metric(f"{opponent} (Solio)",
@@ -238,15 +253,25 @@ try:
         st.subheader("Data Table")
         tab1, tab2 = st.tabs([team, opponent])
 
+        def fmt_table(df_bst):
+            d = df_bst[['timestamp', 'g', 'gc', 'cs', 'method']].copy()
+            d['timestamp'] = d['timestamp'].dt.strftime('%d-%b-%y %H:%M:%S')
+            d['g']  = d['g'].round(2)
+            d['gc'] = d['gc'].round(2)
+            d['cs'] = d['cs'].apply(lambda v: f'{v * 100:.1f}%')
+            return d
+
         with tab1:
-            if len(hist1) > 0:
-                st.dataframe(hist1.sort_values('timestamp', ascending=False), use_container_width=True)
+            if len(h1) > 0:
+                st.dataframe(fmt_table(h1.sort_values('timestamp', ascending=False)),
+                             use_container_width=True)
             else:
                 st.info(f"No data yet for {team}")
 
         with tab2:
-            if len(hist2) > 0:
-                st.dataframe(hist2.sort_values('timestamp', ascending=False), use_container_width=True)
+            if len(h2) > 0:
+                st.dataframe(fmt_table(h2.sort_values('timestamp', ascending=False)),
+                             use_container_width=True)
             else:
                 st.info(f"No data yet for {opponent}")
 

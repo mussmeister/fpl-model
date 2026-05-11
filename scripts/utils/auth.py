@@ -272,8 +272,17 @@ def _render_login(config, cc):
 
         google_url = _google_auth_url(config)
         if google_url:
-            st.link_button("Sign in with Google", google_url,
-                           use_container_width=True, type="primary")
+            st.markdown(
+                f"""<a href="{google_url}" target="_self" style="
+                    display:block;text-align:center;text-decoration:none;
+                    background:#4285F4;color:#fff;font-weight:600;
+                    padding:0.5rem 1rem;border-radius:6px;
+                    font-family:'Barlow',sans-serif;font-size:15px;
+                    margin-bottom:4px;">
+                    🔵 Sign in with Google
+                </a>""",
+                unsafe_allow_html=True,
+            )
             st.markdown('<p style="text-align:center;color:#bbb;margin:10px 0;">── or ──</p>',
                         unsafe_allow_html=True)
 

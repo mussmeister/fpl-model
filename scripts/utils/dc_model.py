@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.stats import poisson
-from scipy.optimize import minimize
+from scipy.optimize import minimize, brentq
 from itertools import product
 
 
@@ -137,12 +137,31 @@ def fit_odds_lambdas(ph, pd_m, pa, dc_rho):
     return np.exp(res.x[0]), np.exp(res.x[1])
 
 
+def implied_total_from_totals(over_line, over_prob):
+    """Solve for Poisson λ_total such that P(goals > over_line) = over_prob.
+
+    For a non-integer line like 2.5: P(X > 2.5) = P(X >= 3) = 1 - CDF(2).
+    Returns None if no solution is found in [0.1, 15].
+    """
+    threshold = int(np.floor(over_line))
+    try:
+        return brentq(lambda lam: (1 - poisson.cdf(threshold, lam)) - over_prob,
+                      0.1, 15.0)
+    except ValueError:
+        return None
+
+
 def project_fixture(home, away, ratings, home_adv,
                     shrinkage_weight, blend_weight, dc_rho,
                     league_avg_home, league_avg_away, odds=None):
     """
     Project expected goals for a single fixture.
     Returns (lambda_home, lambda_away, method).
+
+    When odds contains a 'totals' entry the h2h-derived lambdas are rescaled
+    so that λ_h + λ_a matches the totals-implied total goals, preserving the
+    h2h-implied home/away split.  This gives a more direct total-goals anchor
+    than backing out lambdas purely from win/draw/loss probabilities.
     """
     hr = ratings.get(home, {"attack": 0., "defence": 0.})
     ar = ratings.get(away, {"attack": 0., "defence": 0.})
@@ -152,6 +171,19 @@ def project_fixture(home, away, ratings, home_adv,
     if odds is not None:
         ph, pd_m, pa = remove_margin(odds["home_odds"], odds["draw_odds"], odds["away_odds"])
         lh_raw, la_raw = fit_odds_lambdas(ph, pd_m, pa, dc_rho)
+
+        # Rescale using totals-implied total goals when available.
+        # Totals market directly constrains λ_h + λ_a; h2h gives the ratio.
+        totals = odds.get("totals")
+        if totals is not None:
+            total_implied = implied_total_from_totals(totals["line"], totals["over_prob"])
+            if total_implied is not None:
+                h2h_total = lh_raw + la_raw
+                if h2h_total > 0:
+                    scale = total_implied / h2h_total
+                    lh_raw *= scale
+                    la_raw *= scale
+
         lh_odds = shrinkage_weight * lh_raw + (1 - shrinkage_weight) * league_avg_home
         la_odds = shrinkage_weight * la_raw + (1 - shrinkage_weight) * league_avg_away
         lh = blend_weight * lh_odds + (1 - blend_weight) * lh_rat
@@ -166,15 +198,18 @@ def project_fixture(home, away, ratings, home_adv,
 
 def run_projections(ratings, home_adv, shrinkage_weight, blend_weight, dc_rho,
                     df_target, target_gws, odds_lookup,
-                    league_avg_home, league_avg_away):
+                    league_avg_home, league_avg_away, return_fixtures=False):
     """
     Generate per-team projected stats for all target GWs.
-    Returns dict of DataFrames keyed by GW.
+    Returns dict of DataFrames keyed by GW, or (results, fixtures) when return_fixtures=True.
+    fixtures dict has one row per fixture with home_g/away_g/home_cs/away_cs.
     """
     results = {}
+    fixtures_dict = {}
     for GW in target_gws:
         gw_fixtures = df_target[df_target["GW"] == GW]
         rows = []
+        fix_rows = []
         for _, fix in gw_fixtures.iterrows():
             home, away = fix["Home"], fix["Away"]
             odds = odds_lookup.get((home, away))
@@ -186,6 +221,14 @@ def run_projections(ratings, home_adv, shrinkage_weight, blend_weight, dc_rho,
                          "CS": float(poisson.pmf(0, la)), "Method": method})
             rows.append({"Team": away, "G": la, "GC": lh,
                          "CS": float(poisson.pmf(0, lh)), "Method": method})
+            fix_rows.append({
+                "Home": home, "Away": away,
+                "home_g":  lh,
+                "away_g":  la,
+                "home_cs": float(poisson.pmf(0, la)),
+                "away_cs": float(poisson.pmf(0, lh)),
+                "Method":  method,
+            })
 
         if not rows: continue
         df_per = pd.DataFrame(rows)
@@ -195,7 +238,7 @@ def run_projections(ratings, home_adv, shrinkage_weight, blend_weight, dc_rho,
                 "G":  g["G"].sum(),
                 "GC": g["GC"].sum(),
                 "GD": g["G"].sum() - g["GC"].sum(),
-                "CS": g["CS"].prod(),
+                "CS": g["CS"].sum(),
                 "Method": g["Method"].iloc[0] if g["Method"].nunique() == 1 else "Mixed"
             })
 
@@ -203,6 +246,10 @@ def run_projections(ratings, home_adv, shrinkage_weight, blend_weight, dc_rho,
                         .apply(agg, include_groups=False)
                         .reset_index())
         results[GW] = df_agg
+        fixtures_dict[GW] = pd.DataFrame(fix_rows)
+
+    if return_fixtures:
+        return results, fixtures_dict
     return results
 
 

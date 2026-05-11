@@ -43,9 +43,8 @@ h1, h2, h3 {
 }
 
 .block-container {
-    max-width: 960px !important;
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -91,6 +90,35 @@ def get_latest_projections(gw):
     df = df[df['timestamp'] == latest_ts]
     return {r['team']: {'g': float(r['g']), 'cs': float(r['cs'])} for _, r in df.iterrows()}
 
+@st.cache_data(ttl=600)
+def get_latest_fixture_projections(gw):
+    """Return {(home_team, away_team): {home_g, away_g, home_cs, away_cs}} per fixture."""
+    try:
+        with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
+            cur = conn.execute(
+                """SELECT home_team, away_team, home_g, away_g, home_cs, away_cs, timestamp
+                   FROM projections_fixtures WHERE gw = ? ORDER BY timestamp DESC""",
+                (int(gw),)
+            )
+            rows = cur.fetchall()
+        if not rows:
+            return {}
+        df = pd.DataFrame(rows, columns=['home_team', 'away_team', 'home_g', 'away_g',
+                                          'home_cs', 'away_cs', 'timestamp'])
+        latest_ts = df['timestamp'].max()
+        df = df[df['timestamp'] == latest_ts]
+        return {
+            (r['home_team'], r['away_team']): {
+                'home_g':  float(r['home_g']),
+                'away_g':  float(r['away_g']),
+                'home_cs': float(r['home_cs']),
+                'away_cs': float(r['away_cs']),
+            }
+            for _, r in df.iterrows()
+        }
+    except Exception:
+        return {}
+
 # ── HTML cell helpers ─────────────────────────────────────────────────────────
 
 NUM_FONT = "font-family:'Barlow Condensed',sans-serif;font-weight:700;"
@@ -108,20 +136,20 @@ def cs_td(val, higher):
     if val is None:
         return f'<td style="padding:5px 10px;text-align:center;min-width:58px;{NUM_FONT}">—</td>'
     pct = val * 100
-    s   = f"{pct:.0f}%"
+    s   = f"{pct:.1f}%"
     if pct >= 40:
         return (f'<td style="background:{ORANGE_SOLID};color:{WHITE};padding:5px 10px;'
-                f'border-radius:5px;text-align:center;min-width:58px;{NUM_FONT}">{s}</td>')
+                f'border-radius:5px;text-align:center;min-width:62px;{NUM_FONT}">{s}</td>')
     if pct >= 25:
         return (f'<td style="background:{ORANGE_LIGHT};padding:5px 10px;'
-                f'border-radius:5px;text-align:center;min-width:58px;{NUM_FONT}">{s}</td>')
-    return f'<td style="padding:5px 10px;text-align:center;color:#333;min-width:58px;{NUM_FONT}">{s}</td>'
+                f'border-radius:5px;text-align:center;min-width:62px;{NUM_FONT}">{s}</td>')
+    return f'<td style="padding:5px 10px;text-align:center;color:#333;min-width:62px;{NUM_FONT}">{s}</td>'
 
-def fixture_html(home, away, kickoff, hp, ap, abbr_map, show_header):
+def fixture_html(home, away, kickoff, fix_proj, abbr_map, show_header):
     day_str  = kickoff.strftime('%a')
     date_str = kickoff.strftime('%d/%m')
-    hg  = hp.get('g');  ag  = ap.get('g')
-    hcs = hp.get('cs'); acs = ap.get('cs')
+    hg  = fix_proj.get('home_g');  ag  = fix_proj.get('away_g')
+    hcs = fix_proj.get('home_cs'); acs = fix_proj.get('away_cs')
     hg_hi  = hg  is not None and ag  is not None and hg  > ag
     ag_hi  = hg  is not None and ag  is not None and ag  > hg
     hcs_hi = hcs is not None and acs is not None and hcs > acs
@@ -177,35 +205,28 @@ if not avail_gws:
     st.warning("No upcoming fixtures found.")
     st.stop()
 
-col_title, col_live, col_analytics, col_proj, col_upload = st.columns([4, 1, 1, 1, 1])
-with col_title:
-    st.title("⚽ FPL Fixtures")
-with col_live:
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🔴 Live GW", use_container_width=True, type="primary"):
-        st.switch_page("pages/live_gw.py")
-with col_analytics:
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("📊 Analytics", use_container_width=True):
-        st.switch_page("pages/analytics.py")
-with col_proj:
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🎯 Players", use_container_width=True):
-        st.switch_page("pages/player_projections.py")
-with col_upload:
-    st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("📤 Upload", use_container_width=True):
-        st.switch_page("pages/upload_solio.py")
+st.title("⚽ FPL Fixtures")
 
 selected_gw = st.selectbox(
     "Gameweek", avail_gws, index=0, format_func=lambda g: f"Gameweek {g}"
 )
 
-gw_fix = upcoming[upcoming['GW'] == selected_gw].sort_values('Kickoff_Date').reset_index(drop=True)
-projs  = get_latest_projections(selected_gw)
+gw_fix     = upcoming[upcoming['GW'] == selected_gw].sort_values('Kickoff_Date').reset_index(drop=True)
+fix_projs  = get_latest_fixture_projections(selected_gw)
+old_projs  = get_latest_projections(selected_gw) if not fix_projs else {}
 
-if not projs:
+if not fix_projs and not old_projs:
     st.info(f"No projection data in DB yet for GW{selected_gw}. Run the polling task to populate.")
+
+def _get_fix_proj(home, away):
+    """Per-fixture projections; fall back to aggregated team data if new table is empty."""
+    p = fix_projs.get((home, away))
+    if p is not None:
+        return p
+    hp = old_projs.get(home, {})
+    ap = old_projs.get(away, {})
+    return {'home_g': hp.get('g'), 'away_g': ap.get('g'),
+            'home_cs': hp.get('cs'), 'away_cs': ap.get('cs')}
 
 # Split fixtures into two columns
 n   = len(gw_fix)
@@ -219,7 +240,7 @@ for col, grp in [(col_l, gw_fix.iloc[:mid]), (col_r, gw_fix.iloc[mid:])]:
             home, away = row['Home'], row['Away']
             html = fixture_html(
                 home, away, row['Kickoff_Date'],
-                projs.get(home, {}), projs.get(away, {}),
+                _get_fix_proj(home, away),
                 abbr_map, show_header=(i == 0),
             )
             st.markdown(html, unsafe_allow_html=True)

@@ -19,7 +19,7 @@ html, body, [class*="css"], .stApp, .stMarkdown, .stButton > button {
     font-family: 'Barlow', sans-serif !important;
 }
 h1, h2, h3 { font-family: 'Barlow Condensed', sans-serif !important; font-weight: 800 !important; }
-.block-container { max-width: 700px !important; }
+.block-container { padding-left: 1rem !important; padding-right: 1rem !important; }
 </style>
 """, unsafe_allow_html=True)
 

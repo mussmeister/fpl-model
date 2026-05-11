@@ -149,26 +149,67 @@ def load_vaastav_player_gw(name, team, season):
 
 @st.cache_data(ttl=300)
 def load_player_projections_gw(name, team):
-    """Latest Solio + FPLReview projection per GW — merged into one row per GW."""
+    """Latest-per-GW Solio + FPLReview + model projection — one row per GW.
+
+    Uses the most recent snapshot FOR EACH GW independently, so past GWs
+    retain their pre-match projections even after newer files are uploaded
+    that only cover future GWs.
+    """
     try:
         with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
-            return pd.read_sql("""
-                SELECT gw,
-                       MAX(CASE WHEN source='solio'     THEN xmins END) AS sol_xmins,
-                       MAX(CASE WHEN source='solio'     THEN pts   END) AS sol_pts,
-                       MAX(CASE WHEN source='fplreview' THEN xmins END) AS fpl_xmins,
-                       MAX(CASE WHEN source='fplreview' THEN pts   END) AS fpl_pts
-                FROM player_projection_snapshots
-                WHERE name = ? AND team = ?
-                  AND ingested_at IN (
-                      SELECT MAX(ingested_at)
-                      FROM player_projection_snapshots
-                      WHERE name = ? AND team = ?
-                      GROUP BY source
-                  )
-                GROUP BY gw
-                ORDER BY gw
+            # Latest ingested_at per (source, gw) — keeps historical GW data
+            df_bench = pd.read_sql("""
+                WITH latest AS (
+                    SELECT source, gw, MAX(ingested_at) AS max_ia
+                    FROM player_projection_snapshots
+                    WHERE name = ? AND team = ?
+                    GROUP BY source, gw
+                )
+                SELECT p.gw,
+                       MAX(CASE WHEN p.source='solio'     THEN p.xmins END) AS sol_xmins,
+                       MAX(CASE WHEN p.source='solio'     THEN p.pts   END) AS sol_pts,
+                       MAX(CASE WHEN p.source='fplreview' THEN p.xmins END) AS fpl_xmins,
+                       MAX(CASE WHEN p.source='fplreview' THEN p.pts   END) AS fpl_pts
+                FROM player_projection_snapshots p
+                JOIN latest
+                  ON p.source = latest.source
+                 AND p.gw     = latest.gw
+                 AND p.ingested_at = latest.max_ia
+                WHERE p.name = ? AND p.team = ?
+                GROUP BY p.gw
+                ORDER BY p.gw
             """, conn, params=(name, team, name, team))
+
+            # Latest model timestamp per GW — retains pre-kickoff snapshots
+            try:
+                df_model = pd.read_sql("""
+                    WITH latest AS (
+                        SELECT gw, MAX(timestamp) AS max_ts
+                        FROM player_projection_model
+                        WHERE name = ? AND team = ?
+                        GROUP BY gw
+                    )
+                    SELECT m.gw,
+                           m.xmins AS mdl_xmins,
+                           m.xpts  AS mdl_xpts
+                    FROM player_projection_model m
+                    JOIN latest
+                      ON m.gw = latest.gw
+                     AND m.timestamp = latest.max_ts
+                    WHERE m.name = ? AND m.team = ?
+                    ORDER BY m.gw
+                """, conn, params=(name, team, name, team))
+            except Exception:
+                df_model = pd.DataFrame()
+
+            if df_bench.empty and df_model.empty:
+                return pd.DataFrame()
+            if df_bench.empty:
+                return df_model
+            if df_model.empty:
+                return df_bench
+            return df_bench.merge(df_model, on="gw", how="outer")
+
     except Exception:
         return pd.DataFrame()
 
@@ -525,11 +566,14 @@ def gw_tables(gw_df, name=None, team=None):
         ('sol_pts',        'Sol xPts'),
         ('fpl_xmins',      'FPL xMins'),
         ('fpl_pts',        'FPL xPts'),
+        ('mdl_xmins',      'Mdl xMins'),
+        ('mdl_xpts',       'Mdl xPts'),
     ]
     present = [(src, dst) for src, dst in col_order if src in df.columns]
     show = df[[s for s, _ in present]].rename(columns=dict(present))
 
-    for col in ['xG', 'xA', 'Sol xMins', 'Sol xPts', 'FPL xMins', 'FPL xPts']:
+    for col in ['xG', 'xA', 'Sol xMins', 'Sol xPts', 'FPL xMins', 'FPL xPts',
+                'Mdl xMins', 'Mdl xPts']:
         if col in show.columns:
             show[col] = pd.to_numeric(show[col], errors='coerce').round(2)
 

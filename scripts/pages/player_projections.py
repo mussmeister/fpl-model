@@ -13,10 +13,12 @@ from utils.auth import require_auth, show_logout_button
 
 DB_PATH = Path(__file__).resolve().parents[2] / 'outputs' / 'projections_history.db'
 
-SOLIO_COL   = '#2563EB'
-FPLREV_COL  = '#DC2626'
-SOLIO_FAINT = 'rgba(37,99,235,0.25)'
-FPLREV_FAINT= 'rgba(220,38,38,0.25)'
+SOLIO_COL    = '#2563EB'
+FPLREV_COL   = '#DC2626'
+MODEL_COL    = '#16A34A'
+SOLIO_FAINT  = 'rgba(37,99,235,0.25)'
+FPLREV_FAINT = 'rgba(220,38,38,0.25)'
+MODEL_FAINT  = 'rgba(22,163,74,0.25)'
 
 st.set_page_config(page_title="FPL – Player Projections", layout="wide", page_icon="🎯")
 
@@ -27,7 +29,7 @@ html, body, [class*="css"], .stApp, .stMarkdown, .stButton > button {
     font-family: 'Barlow', sans-serif !important;
 }
 h1, h2, h3 { font-family: 'Barlow Condensed', sans-serif !important; font-weight: 800 !important; }
-.block-container { max-width: 1000px !important; }
+.block-container { padding-left: 1rem !important; padding-right: 1rem !important; }
 .stat-card {
     background:#f8f9fa; border:1px solid #e0e0e0; border-radius:10px;
     padding:12px 16px; text-align:center;
@@ -120,6 +122,39 @@ def get_all_snapshots(name, team):
     except Exception:
         return pd.DataFrame()
 
+@st.cache_data(ttl=300)
+def get_model_snapshot(name, team):
+    """Latest model projection snapshot for this player — one row per GW."""
+    try:
+        with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
+            return pd.read_sql("""
+                SELECT gw, xmins, xpts AS pts, goal_prob, assist_prob,
+                       cs_prob, bonus_prob, appearance_pts, save_pts, timestamp
+                FROM player_projection_model
+                WHERE name = ? AND team = ?
+                  AND timestamp = (
+                      SELECT MAX(timestamp) FROM player_projection_model
+                      WHERE name = ? AND team = ?
+                  )
+                ORDER BY gw
+            """, conn, params=(name, team, name, team))
+    except Exception:
+        return pd.DataFrame()
+
+@st.cache_data(ttl=300)
+def get_model_trend_for_gw(name, team, gw):
+    """Model xMins/xPts for a specific GW across all stored timestamps."""
+    try:
+        with sqlite3.connect(str(DB_PATH), check_same_thread=False) as conn:
+            return pd.read_sql("""
+                SELECT timestamp, xmins, xpts AS pts, goal_prob, assist_prob, cs_prob
+                FROM player_projection_model
+                WHERE name = ? AND team = ? AND gw = ?
+                ORDER BY timestamp
+            """, conn, params=(name, team, int(gw)))
+    except Exception:
+        return pd.DataFrame()
+
 def stat_card(label, value, sub=""):
     sub_html = f'<div class="stat-sub">{sub}</div>' if sub else ''
     return (f'<div class="stat-card">'
@@ -188,25 +223,34 @@ show_fplrev = src_filt in ('Both', 'fplreview')
 
 df_solio  = get_latest_snapshot(name, team, 'solio')   if show_solio  else pd.DataFrame()
 df_fplrev = get_latest_snapshot(name, team, 'fplreview') if show_fplrev else pd.DataFrame()
+df_model  = get_model_snapshot(name, team)
 
-if df_solio.empty and df_fplrev.empty:
+if df_solio.empty and df_fplrev.empty and df_model.empty:
     st.info("No projection data found for this player.")
     st.stop()
 
 # Summary metric strip — latest GW average xMins and Pts across sources
 all_latest = get_all_snapshots(name, team)
+stat_entries = []
 if not all_latest.empty:
     avg = all_latest.groupby('source')[['xmins', 'pts']].mean().round(2)
-    cols = st.columns(len(avg) * 2)
-    i = 0
     for src, row in avg.iterrows():
-        cols[i].markdown(stat_card(f"{src.upper()} avg xMins", f"{row['xmins']:.1f}",
-                                   f"GW {int(all_latest[all_latest['source']==src]['gw'].min())}–"
-                                   f"{int(all_latest[all_latest['source']==src]['gw'].max())}"),
-                         unsafe_allow_html=True)
-        cols[i+1].markdown(stat_card(f"{src.upper()} avg xPts", f"{row['pts']:.2f}", ""),
-                           unsafe_allow_html=True)
-        i += 2
+        label_gw = (f"GW {int(all_latest[all_latest['source']==src]['gw'].min())}–"
+                    f"{int(all_latest[all_latest['source']==src]['gw'].max())}")
+        stat_entries.append((f"{src.upper()} avg xMins", f"{row['xmins']:.1f}", label_gw))
+        stat_entries.append((f"{src.upper()} avg xPts",  f"{row['pts']:.2f}",  ""))
+if not df_model.empty:
+    mdl_gw_min = int(df_model['gw'].min())
+    mdl_gw_max = int(df_model['gw'].max())
+    stat_entries.append(("Model avg xMins", f"{df_model['xmins'].mean():.1f}",
+                          f"GW {mdl_gw_min}–{mdl_gw_max}"))
+    stat_entries.append(("Model avg xPts",  f"{df_model['pts'].mean():.2f}",
+                          df_model['timestamp'].iloc[-1][:16] if not df_model.empty else ""))
+
+if stat_entries:
+    cols = st.columns(len(stat_entries))
+    for i, (lbl, val, sub) in enumerate(stat_entries):
+        cols[i].markdown(stat_card(lbl, val, sub), unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -243,6 +287,18 @@ with tab_snap:
             name=f'FPLReview ({ts[:10]})',
             marker_color=FPLREV_COL,
             hovertemplate='GW%{x} — FPLReview<br>' + metric_snap + ': <b>%{y:.2f}</b><extra></extra>',
+        ))
+
+    # Model — xMins and xPts only (Goals/Assists/CS are probabilities in the model)
+    model_snap_col = snap_col if snap_col in ('xmins', 'pts') else None
+    if not df_model.empty and model_snap_col and model_snap_col in df_model.columns:
+        ts = df_model['timestamp'].iloc[-1]
+        fig_snap.add_trace(go.Bar(
+            x=df_model['gw'],
+            y=df_model[model_snap_col].fillna(0),
+            name=f'Model ({ts[:10]})',
+            marker_color=MODEL_COL,
+            hovertemplate='GW%{x} — Model<br>' + metric_snap + ': <b>%{y:.2f}</b><extra></extra>',
         ))
 
     fig_snap.update_layout(
@@ -289,10 +345,11 @@ with tab_snap:
 # ── Tab 2: Projection Trend ────────────────────────────────────────────────────
 
 with tab_trend:
-    # Available GWs across both sources
+    # Available GWs across all sources including model
     all_gws = set()
     if not df_solio.empty:  all_gws.update(df_solio['gw'].tolist())
     if not df_fplrev.empty: all_gws.update(df_fplrev['gw'].tolist())
+    if not df_model.empty:  all_gws.update(df_model['gw'].tolist())
     gw_opts = sorted(all_gws)
 
     if not gw_opts:
@@ -308,15 +365,19 @@ with tab_trend:
 
         trend_col  = col_map[metric_trend]
         df_trend   = get_trend_for_gw(name, team, sel_gw)
+        df_mdl_trend = get_model_trend_for_gw(name, team, sel_gw) if trend_col in ('xmins', 'pts') else pd.DataFrame()
 
-        if df_trend.empty:
+        if df_trend.empty and df_mdl_trend.empty:
             st.info(f"No trend data for GW {sel_gw}.")
         else:
             fig_trend = go.Figure()
+
             for src, color, faint in [
                 ('solio',     SOLIO_COL,  SOLIO_FAINT),
                 ('fplreview', FPLREV_COL, FPLREV_FAINT),
             ]:
+                if df_trend.empty:
+                    continue
                 d = df_trend[df_trend['source'] == src].copy()
                 if d.empty or trend_col not in d.columns:
                     continue
@@ -330,12 +391,35 @@ with tab_trend:
                     y=d[trend_col],
                     name=label,
                     mode='lines+markers',
-                    line=dict(color=color, width=3, shape='spline', smoothing=1.3),
-                    marker=dict(size=8),
+                    line=dict(color=color, width=3, shape='spline', smoothing=1.3, dash='dot'),
+                    marker=dict(size=8, symbol='circle-open'),
                     hovertemplate=(f'<b>{label}</b><br>%{{x|%Y-%m-%d %H:%M}}<br>'
                                    f'{metric_trend}: <b>%{{y:.2f}}</b><extra></extra>'),
                 ))
 
+            # Model trend line (xMins / xPts only) — solid green, latest day only
+            if not df_mdl_trend.empty and trend_col in df_mdl_trend.columns:
+                dm = df_mdl_trend.copy()
+                dm['timestamp'] = pd.to_datetime(dm['timestamp'])
+                dm = dm.dropna(subset=[trend_col]).sort_values('timestamp')
+                if not dm.empty:
+                    # Only show snapshots from the most recent calendar day
+                    latest_day = dm['timestamp'].dt.normalize().max()
+                    dm = dm[dm['timestamp'].dt.normalize() == latest_day]
+                if not dm.empty:
+                    fig_trend.add_trace(go.Scatter(
+                        x=dm['timestamp'],
+                        y=dm[trend_col],
+                        name='Model',
+                        mode='lines+markers',
+                        line=dict(color=MODEL_COL, width=3, shape='spline', smoothing=1.3),
+                        marker=dict(size=8),
+                        hovertemplate=(f'<b>Model</b><br>%{{x|%Y-%m-%d %H:%M}}<br>'
+                                       f'{metric_trend}: <b>%{{y:.2f}}</b><extra></extra>'),
+                    ))
+
+            n_bench = len(df_trend) if not df_trend.empty else 0
+            n_model = len(df_mdl_trend) if not df_mdl_trend.empty else 0
             fig_trend.update_layout(
                 title=f"{name} — GW{sel_gw} {metric_trend} over time",
                 xaxis_title="Snapshot date",
@@ -347,40 +431,123 @@ with tab_trend:
                 margin=dict(t=50),
             )
             st.plotly_chart(fig_trend, use_container_width=True)
-            st.caption(f"Each point = one uploaded snapshot. {len(df_trend)} total data points for GW {sel_gw}.")
+            st.caption(f"Benchmarks: {n_bench} data points. Model: {n_model} snapshots (every 2h).")
 
 # ── Tab 3: Data Table ─────────────────────────────────────────────────────────
 
 with tab_table:
-    if not all_latest.empty:
-        # Solio — full metrics
-        solio_df = all_latest[all_latest['source'] == 'solio']
-        fplrev_df = all_latest[all_latest['source'] == 'fplreview']
+    _solio_tbl  = all_latest[all_latest['source'] == 'solio'].copy()   if not all_latest.empty else pd.DataFrame()
+    _fplrev_tbl = all_latest[all_latest['source'] == 'fplreview'].copy() if not all_latest.empty else pd.DataFrame()
 
-        if not solio_df.empty:
-            st.markdown(f"**Solio** — latest snapshot: `{solio_df['ingested_at'].iloc[0][:10]}`")
-            show_s = solio_df[['gw', 'xmins', 'pts', 'goals', 'assists', 'cs', 'bonus', 'cbit', 'eo']].copy()
-            show_s = show_s.rename(columns={
-                'gw': 'GW', 'xmins': 'xMins', 'pts': 'xPts', 'goals': 'Goals',
-                'assists': 'Assists', 'cs': 'CS', 'bonus': 'Bonus', 'cbit': 'CBit', 'eo': 'EO'
-            })
-            for c in ['xMins', 'xPts', 'Goals', 'Assists', 'CS', 'Bonus', 'CBit', 'EO']:
-                if c in show_s.columns:
-                    show_s[c] = show_s[c].round(3)
-            st.dataframe(show_s, use_container_width=True, hide_index=True)
+    # Unified column order — every table uses exactly these headings
+    _UCOLS = ['GW','xMins','xPts','Goals','Assists','CS','Bonus',
+              'App Pts','Save Pts','CBit','EO','Elite%']
 
-        if not fplrev_df.empty:
-            st.markdown(f"**FPLReview** — latest snapshot: `{fplrev_df['ingested_at'].iloc[0][:10]}`")
-            show_f = fplrev_df[['gw', 'xmins', 'pts', 'elite_pct']].copy()
-            show_f = show_f.rename(columns={
-                'gw': 'GW', 'xmins': 'xMins', 'pts': 'xPts', 'elite_pct': 'Elite%'
-            })
-            for c in ['xMins', 'xPts', 'Elite%']:
-                if c in show_f.columns:
-                    show_f[c] = show_f[c].round(3)
-            st.dataframe(show_f, use_container_width=True, hide_index=True)
-    else:
-        st.info("No data available.")
+    def _unify_model(df):
+        r = df[['gw','xmins','pts','goal_prob','assist_prob','cs_prob',
+                'bonus_prob','appearance_pts','save_pts']].copy().reset_index(drop=True)
+        r.columns = ['GW','xMins','xPts','Goals','Assists','CS','Bonus','App Pts','Save Pts']
+        for c in ('CBit','EO','Elite%'): r[c] = float('nan')
+        return r[_UCOLS]
+
+    def _unify_solio(df):
+        r = df[['gw','xmins','pts','goals','assists','cs','bonus','cbit','eo']].copy().reset_index(drop=True)
+        r.columns = ['GW','xMins','xPts','Goals','Assists','CS','Bonus','CBit','EO']
+        for c in ('App Pts','Save Pts','Elite%'): r[c] = float('nan')
+        return r[_UCOLS]
+
+    def _unify_fplrev(df):
+        r = df[['gw','xmins','pts','elite_pct']].copy().reset_index(drop=True)
+        r.columns = ['GW','xMins','xPts','Elite%']
+        for c in ('Goals','Assists','CS','Bonus','App Pts','Save Pts','CBit','EO'): r[c] = float('nan')
+        return r[_UCOLS]
+
+    # ── GW selector — highlights same row in all tables ───────────────────
+    _gw_pool: set = set()
+    for _d in [_solio_tbl, _fplrev_tbl, df_model]:
+        if not _d.empty:
+            _gw_pool.update(_d['gw' if 'gw' in _d.columns else 'GW'].tolist())
+    _highlight_gw = None
+    if _gw_pool:
+        _highlight_gw = st.selectbox(
+            "Highlight gameweek",
+            [None] + sorted(int(g) for g in _gw_pool),
+            format_func=lambda g: "— all rows —" if g is None else f"GW {g}",
+            key="table_highlight_gw",
+        )
+
+    # Formatting: 2 dp for all numeric cols, "—" for NaN, int for GW
+    _nan2 = lambda v: '—' if pd.isna(v) else f'{v:.2f}'
+    _FMT = {c: _nan2 for c in _UCOLS if c != 'GW'}
+    _FMT['GW'] = lambda v: '—' if pd.isna(v) else str(int(v))
+
+    _sm = st.column_config.NumberColumn(width="small")
+    _cfg_u = {c: st.column_config.TextColumn(c, width="small") for c in _UCOLS}
+
+    def _styled(df, delta_cols=()):
+        fmt = {c: v for c, v in _FMT.items() if c in df.columns}
+        for c in df.columns:
+            if c not in fmt:
+                fmt[c] = _nan2
+        def _row(row):
+            is_hl = _highlight_gw is not None and 'GW' in row.index and row['GW'] == _highlight_gw
+            bg = 'background-color:#fef9c3; font-weight:600; ' if is_hl else ''
+            out = []
+            for col in row.index:
+                s = bg
+                if col in delta_cols:
+                    val = row[col]
+                    if pd.notna(val) and val != 0:
+                        s += ('color:#16a34a; font-weight:600' if val > 0
+                              else 'color:#dc2626; font-weight:600')
+                out.append(s)
+            return out
+        return df.style.format(fmt).apply(_row, axis=1)
+
+    # ── Own Model ─────────────────────────────────────────────────────────
+    if not df_model.empty:
+        st.markdown(f"**Own Model** — latest snapshot: `{df_model['timestamp'].iloc[-1][:16]}`")
+        st.dataframe(_styled(_unify_model(df_model)), hide_index=True,
+                     use_container_width=True, column_config=_cfg_u)
+
+    # ── Solio ─────────────────────────────────────────────────────────────
+    if not _solio_tbl.empty:
+        st.markdown(f"**Solio** — latest snapshot: `{_solio_tbl['ingested_at'].iloc[0][:10]}`")
+        st.dataframe(_styled(_unify_solio(_solio_tbl)), hide_index=True,
+                     use_container_width=True, column_config=_cfg_u)
+
+    # ── FPLReview ─────────────────────────────────────────────────────────
+    if not _fplrev_tbl.empty:
+        st.markdown(f"**FPLReview** — latest snapshot: `{_fplrev_tbl['ingested_at'].iloc[0][:10]}`")
+        st.dataframe(_styled(_unify_fplrev(_fplrev_tbl)), hide_index=True,
+                     use_container_width=True, column_config=_cfg_u)
+
+    if all_latest.empty:
+        st.info("No benchmark data available.")
+
+    # ── Model vs Benchmark difference ─────────────────────────────────────
+    _has_bench = not _solio_tbl.empty or not _fplrev_tbl.empty
+    if not df_model.empty and _has_bench:
+        st.markdown("**Model vs Benchmark** — model minus benchmark average")
+        _parts = [_d[['gw','xmins','pts']] for _d in [_solio_tbl, _fplrev_tbl] if not _d.empty]
+        _bench = pd.concat(_parts).groupby('gw')[['xmins','pts']].mean().reset_index()
+        _bench.columns = ['gw','bench_xmins','bench_xpts']
+        _diff = _bench.merge(df_model[['gw','xmins','pts']], on='gw', how='inner')
+        _diff['Δ xMins'] = (_diff['xmins'] - _diff['bench_xmins']).round(2)
+        _diff['Δ xPts']  = (_diff['pts']   - _diff['bench_xpts']).round(2)
+        _diff = _diff.rename(columns={
+            'gw':'GW', 'bench_xmins':'Bench xMins', 'bench_xpts':'Bench xPts',
+            'xmins':'Mdl xMins', 'pts':'Mdl xPts',
+        })
+        for c in ('Bench xMins','Mdl xMins','Bench xPts','Mdl xPts'):
+            _diff[c] = _diff[c].round(2)
+        _diff = _diff[['GW','Bench xMins','Mdl xMins','Δ xMins','Bench xPts','Mdl xPts','Δ xPts']]
+        _diff_cfg = {c: st.column_config.TextColumn(c, width="small")
+                     for c in _diff.columns}
+        st.dataframe(
+            _styled(_diff, delta_cols=('Δ xMins','Δ xPts')),
+            hide_index=True, use_container_width=True, column_config=_diff_cfg,
+        )
 
 st.markdown("---")
-st.caption("Source: Solio projection_all_metrics + FPLReview fplreview_*.csv — uploaded via Player Projections Upload page.")
+st.caption("Benchmarks: Solio + FPLReview uploads. Own model: DC team ratings + FPL player universe, refreshed every 2h.")

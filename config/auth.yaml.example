@@ -1,0 +1,27 @@
+# FPL Dashboard Authentication — copy to auth.yaml and fill in values
+# See comments for setup instructions.
+
+credentials:
+  usernames:
+    yourname:
+      email: you@example.com
+      name: Your Name
+      password: ""   # bcrypt hash — run: python scripts/hash_password.py yourpassword
+      role: admin
+
+cookie:
+  name: fpl_dashboard_auth
+  key: ""   # random hex — run: python -c "import secrets; print(secrets.token_hex(16))"
+  expiry_days: 30
+
+oauth2:
+  google:
+    client_id: ""       # from Google Cloud Console
+    client_secret: ""   # from Google Cloud Console
+    redirect_uri: "https://yourdomain.com/"
+
+admin_emails:
+  - you@example.com
+member_emails: []
+
+allow_google_registration: true

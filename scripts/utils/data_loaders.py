@@ -47,10 +47,12 @@ def load_season_results(season):
     return df, all_teams, team_idx, avg_home, avg_away
 
 
-def fetch_odds(api_key, bookmakers=None, regions="uk", markets="h2h", odds_format="decimal"):
+def fetch_odds(api_key, bookmakers=None, regions="uk", markets="h2h,totals", odds_format="decimal"):
     """
-    Fetch current EPL h2h odds from the-odds-api.
+    Fetch current EPL h2h + totals odds from the-odds-api in one call.
     Returns odds_lookup dict keyed by (home, away).
+    Each entry has home_odds/draw_odds/away_odds plus optional totals dict
+    with 'line' and 'over_prob' for use in implied-total lambda rescaling.
     Supports optional bookmaker filters (e.g. ['pinnacle']).
     """
     params = {
@@ -82,6 +84,8 @@ def fetch_odds(api_key, bookmakers=None, regions="uk", markets="h2h", odds_forma
         home = to_short(event["home_team"], ODDS_TO_SHORT)
         away = to_short(event["away_team"], ODDS_TO_SHORT)
         h, d, a = [], [], []
+        over_by_line  = {}   # line -> [over prices]
+        under_by_line = {}   # line -> [under prices]
 
         bookies_to_parse = event.get("bookmakers", [])
         if requested_bookies:
@@ -93,23 +97,44 @@ def fetch_odds(api_key, bookmakers=None, regions="uk", markets="h2h", odds_forma
 
         for bm in bookies_to_parse:
             for mkt in bm.get("markets", []):
-                if mkt["key"] != "h2h":
-                    continue
-                for o in mkt["outcomes"]:
-                    n_name = to_short(o["name"], ODDS_TO_SHORT)
-                    p = o["price"]
-                    if n_name == home:
-                        h.append(p)
-                    elif o["name"] == "Draw":
-                        d.append(p)
-                    elif n_name == away:
-                        a.append(p)
+                if mkt["key"] == "h2h":
+                    for o in mkt["outcomes"]:
+                        n_name = to_short(o["name"], ODDS_TO_SHORT)
+                        p = o["price"]
+                        if n_name == home:
+                            h.append(p)
+                        elif o["name"] == "Draw":
+                            d.append(p)
+                        elif n_name == away:
+                            a.append(p)
+                elif mkt["key"] == "totals":
+                    for o in mkt["outcomes"]:
+                        line = o.get("point")
+                        if line is None:
+                            continue
+                        if o["name"] == "Over":
+                            over_by_line.setdefault(line, []).append(o["price"])
+                        elif o["name"] == "Under":
+                            under_by_line.setdefault(line, []).append(o["price"])
+
         if not h:
             return None
+
+        totals = None
+        if over_by_line:
+            best_line = max(over_by_line, key=lambda l: len(over_by_line[l]))
+            avg_over  = float(np.mean(over_by_line[best_line]))
+            avg_under = float(np.mean(under_by_line.get(best_line, [avg_over])))
+            inv_o = 1.0 / avg_over
+            inv_u = 1.0 / avg_under
+            over_prob = inv_o / (inv_o + inv_u)
+            totals = {"line": best_line, "over_prob": round(over_prob, 4)}
+
         return {"home": home, "away": away,
                 "home_odds": round(np.mean(h), 4),
                 "draw_odds": round(np.mean(d), 4),
-                "away_odds": round(np.mean(a), 4)}
+                "away_odds": round(np.mean(a), 4),
+                "totals": totals}
 
     raw_odds = [parse_match(e) for e in r.json()]
     raw_odds = [o for o in raw_odds if o]

@@ -24,7 +24,7 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap');
 html, body, [class*="css"], .stApp { font-family: 'Barlow', sans-serif !important; }
 h1, h2, h3 { font-family: 'Barlow Condensed', sans-serif !important; font-weight: 800 !important; }
-.block-container { max-width: 960px !important; padding-left: 2rem !important; padding-right: 2rem !important; }
+.block-container { padding-left: 1rem !important; padding-right: 1rem !important; }
 </style>
 """, unsafe_allow_html=True)
 

@@ -1,0 +1,39 @@
+{
+  "_note": "Use FPL web_names. Team names must match player_projection_model team column. Update when takers change.",
+
+  "penalty_takers": {
+    "Arsenal":        "Saka",
+    "Aston Villa":    "Watkins",
+    "Bournemouth":    "Kluivert",
+    "Brighton":       "Gross",
+    "Chelsea":        "Palmer",
+    "Everton":        "McNeil",
+    "Fulham":         "Jimenez",
+    "Liverpool":      "Salah",
+    "Man City":       "Haaland",
+    "Man Utd":        "Mbeumo",
+    "Newcastle":      "Trippier",
+    "Nott'm Forest":  "Gibbs-White",
+    "Spurs":          "Son",
+    "West Ham":       "Bowen",
+    "Wolves":         "Cunha"
+  },
+
+  "corner_takers": {
+    "Arsenal":        "Eze",
+    "Aston Villa":    "McGinn",
+    "Bournemouth":    "Kluivert",
+    "Brighton":       "Gross",
+    "Chelsea":        "Palmer",
+    "Everton":        "McNeil",
+    "Fulham":         "Andreas",
+    "Liverpool":      "Robertson",
+    "Man City":       "B.Silva",
+    "Man Utd":        "B.Fernandes",
+    "Newcastle":      "Trippier",
+    "Nott'm Forest":  "Gibbs-White",
+    "Spurs":          "Maddison",
+    "West Ham":       "Kudus",
+    "Wolves":         "Neto"
+  }
+}
